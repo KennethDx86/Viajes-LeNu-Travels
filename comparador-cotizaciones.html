@@ -248,11 +248,45 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
   "use strict";
 
   const STORAGE_KEY = "ka_comparador_cotizaciones_v1";
+
+  // ══ Sync a Supabase (multi-dispositivo) ══
+  // Nunca bloquea ni falla el guardado local: localStorage manda siempre, esto es
+  // fire-and-forget encima. Mismo patrón que el resto de calculadoras del ecosistema KA:
+  // el navegador llama a /db-proxy (nunca a Supabase directo ni con llave real).
+  const SUPABASE_URL = window.location.origin + '/db-proxy';
+  const SUPABASE_KEY = 'proxied'; // no es credencial real: el proxy agrega la llave secreta en el servidor.
+  const sb = (typeof supabase!=='undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+  let _syncTimer = null;
+  function syncEstadoSupabase(){
+    if(!sb) return;
+    clearTimeout(_syncTimer);
+    _syncTimer = setTimeout(()=>{
+      sb.from('personal_calculadoras')
+        .upsert({ id: STORAGE_KEY, data: state, updated_at: new Date().toISOString() })
+        .then(({error})=>{ if(error) console.warn('Supabase sync error:', error); });
+    }, 800);
+  }
+  async function pullEstadoSupabase(){
+    if(!sb) return;
+    try{
+      const { data, error } = await sb.from('personal_calculadoras').select('data,updated_at').eq('id', STORAGE_KEY).maybeSingle();
+      if(!error && data && data.data){
+        state = Object.assign(freshState(), data.data);
+        if(!state.activeTripId || !getTrip(state.activeTripId)){
+          state.activeTripId = state.trips[0] ? state.trips[0].id : null;
+        }
+        try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+        render();
+      }
+    }catch(e){ console.warn('Supabase pull error:', e); }
+  }
+
   const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 
   const uid = () => 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,8);
@@ -300,6 +334,7 @@
   function save(){
     try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
     catch(e){ console.error("Error guardando datos:", e); }
+    syncEstadoSupabase();
   }
 
   // ---------------- HELPERS ----------------
@@ -876,6 +911,7 @@
   // ---------------- INIT ----------------
   load();
   render();
+  pullEstadoSupabase();
 })();
 </script>
 </body>
