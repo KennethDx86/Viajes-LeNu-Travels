@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="es-CR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KA · Comparador de Cotizaciones</title>
+<style>
+  :root{
+    --ka-primary:#1B6B64;
+    --ka-secondary:#F2C4A4;
+    --ka-accent:#DD8B5D;
+    --ka-accent-hover:#C6763F;
+    --ka-dark:#1D1B3A;
+    --ka-light:#D9E5DD;
+    --ka-base:#FAF3EC;
+    --ka-base-sobria:#F4F6F5;
+    --warn:#C0562E;
+    --line:#E4DACE;
+
+    --teal:var(--ka-primary);
+    --teal-dark:#134F49;
+    --teal-soft:var(--ka-base-sobria);
+    --peach:var(--ka-secondary);
+    --peach-dark:var(--ka-accent);
+    --bg:var(--ka-base-sobria);
+    --surface:#FFFFFF;
+    --ink:var(--ka-dark);
+    --muted:#8b8578;
+    --danger:var(--warn);
+    --radius:14px;
+    --font-display:Arial, Helvetica, sans-serif;
+    --font-body:Arial, Helvetica, sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased; padding-bottom:60px;}
+  ::selection{background:var(--peach); color:var(--teal-dark);}
+
+  header.ka-hero{background:linear-gradient(120deg, var(--ka-primary) 0%, #134F49 100%); color:#fff; padding:28px 32px 22px; position:relative; overflow:hidden;}
+  header.ka-hero::after{content:""; position:absolute; right:-40px; top:-60px; width:220px; height:220px; border-radius:50%; background:var(--ka-secondary); opacity:.18;}
+  header.ka-hero .ka-mark{display:inline-flex; align-items:center; gap:10px; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--ka-secondary); font-weight:bold;}
+  header.ka-hero .ka-mark span.dot{width:8px;height:8px;border-radius:50%; background:var(--ka-accent); display:inline-block;}
+  header.ka-hero .ka-back{display:inline-flex; align-items:center; gap:5px; font-size:12px; color:var(--ka-light); text-decoration:none; opacity:.85; margin-bottom:10px;}
+  header.ka-hero .ka-back:hover{opacity:1; text-decoration:underline;}
+  header.ka-hero h1{margin:10px 0 4px; font-size:1.5rem; font-family:var(--font-display); letter-spacing:-0.02em;}
+  header.ka-hero p{margin:0; color:var(--ka-light); font-size:0.85rem; max-width:620px;}
+
+  .fx-bar{display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:14px 32px 0;}
+  .fx-box{background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:6px 10px; display:flex; align-items:center; gap:6px; font-size:0.8rem; color:var(--ink);}
+  .fx-box span{opacity:0.7;}
+  .fx-box input{width:66px; background:transparent; border:none; border-bottom:1px solid var(--line); color:var(--ink); font-size:0.82rem; font-family:var(--font-body); padding:2px 2px; text-align:right;}
+  .fx-box input:focus{outline:none; border-color:var(--teal);}
+
+  button.btn{border:none; border-radius:8px; padding:10px 16px; font-family:inherit; font-weight:bold; font-size:13px; cursor:pointer;}
+  button.btn-ghost{background:transparent; color:var(--ka-primary); border:1px solid var(--ka-primary);}
+  button.btn-danger{background:transparent; color:var(--warn); border:1px solid var(--warn); padding:6px 10px; font-size:12px;}
+  button.btn-small{padding:6px 10px; font-size:12px; border-radius:7px;}
+
+  footer.ka-footer{text-align:center; font-size:11px; color:#8b8578; padding:20px;}
+
+  /* ---------- TABS ---------- */
+  .tabs{display:flex; gap:6px; padding:14px 32px 0; flex-wrap:wrap; align-items:center;}
+  .tab-btn{background:var(--surface); border:1px solid var(--line); border-bottom:none; padding:9px 16px; border-radius:10px 10px 0 0; font-size:0.82rem; font-weight:600; color:var(--muted); cursor:pointer; position:relative; top:1px;}
+  .tab-btn.active{color:var(--teal-dark); background:var(--teal-soft); border-color:var(--line);}
+  .tab-btn.main-tab{font-size:0.86rem; padding:10px 18px;}
+  .tab-btn.compare-tab{background:var(--peach); color:var(--teal-dark); border-color:var(--peach-dark);}
+  .tab-btn.compare-tab.active{background:var(--peach-dark); color:#fff;}
+  .tab-add{background:none; border:1px dashed var(--muted); color:var(--muted); padding:8px 14px; border-radius:10px; font-size:0.8rem; cursor:pointer; font-weight:600;}
+  .tab-add:hover{border-color:var(--teal); color:var(--teal);}
+
+  main{padding:0 32px 32px;}
+  .panel{background:var(--teal-soft); border:1px solid var(--line); border-radius:0 12px 12px 12px; padding:22px; min-height:60vh;}
+
+  /* ---------- TRIP HEADER ---------- */
+  .trip-header{background:var(--surface); border-radius:var(--radius); padding:18px 22px; margin-bottom:18px; display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap; box-shadow:0 1px 2px rgba(0,0,0,0.04);}
+  .trip-header-main{flex:1; min-width:260px;}
+  .trip-name-input{font-family:var(--font-display); font-size:1.35rem; font-weight:600; border:none; background:transparent; color:var(--teal-dark); padding:2px 4px; width:100%; border-radius:6px;}
+  .trip-name-input:hover, .trip-name-input:focus{background:var(--teal-soft); outline:none;}
+  .trip-dates{display:flex; align-items:center; gap:10px; margin-top:10px; font-size:0.82rem; color:var(--muted);}
+  .trip-dates input{border:1px solid var(--line); border-radius:7px; padding:5px 8px; font-family:var(--font-body); font-size:0.8rem; color:var(--ink);}
+  .route-line{flex:1; min-width:40px; max-width:120px; height:1px; background:repeating-linear-gradient(90deg, var(--peach-dark) 0 6px, transparent 6px 11px); position:relative;}
+  .route-line::after{content:"✈"; position:absolute; top:-9px; left:50%; transform:translateX(-50%); font-size:0.8rem; color:var(--peach-dark);}
+  .trip-actions{display:flex; gap:8px; align-items:flex-start;}
+  .trip-total-box{text-align:right; background:var(--teal); color:#fff; padding:12px 18px; border-radius:12px; min-width:150px;}
+  .trip-total-box .label{font-size:0.68rem; opacity:0.8; letter-spacing:0.05em; text-transform:uppercase;}
+  .trip-total-box .amount{font-family:var(--font-display); font-size:1.35rem; font-weight:700;}
+  .icon-btn{background:var(--surface); border:1px solid var(--line); width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:0.85rem; color:var(--muted); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .icon-btn:hover{border-color:var(--teal); color:var(--teal);}
+  .icon-btn.danger:hover{border-color:var(--danger); color:var(--danger);}
+
+  /* ---------- TWO COLUMN LAYOUT ---------- */
+  .cols{display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start;}
+  @media (max-width:900px){ .cols{grid-template-columns:1fr;} }
+  .col-title-row{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:10px; flex-wrap:wrap;}
+  .col-title{font-family:var(--font-display); font-size:0.95rem; font-weight:600; color:var(--teal-dark); margin:0; display:flex; align-items:center; gap:8px;}
+  .col-title .count{font-family:var(--font-body); font-weight:600; font-size:0.7rem; background:var(--peach); color:var(--teal-dark); padding:2px 8px; border-radius:20px;}
+  .currency-toggle{display:flex; border:1px solid var(--teal); border-radius:20px; overflow:hidden; flex-shrink:0;}
+  .ctog-btn{border:none; background:var(--surface); color:var(--teal-dark); padding:5px 12px; font-size:0.76rem; font-weight:700; cursor:pointer;}
+  .ctog-btn.active{background:var(--teal); color:#fff;}
+  .card-list{display:flex; flex-direction:column; gap:8px;}
+
+  .empty-state{text-align:center; padding:36px 16px; color:var(--muted); font-size:0.82rem; background:var(--surface); border:1px dashed var(--line); border-radius:12px;}
+  .total-row{display:flex; justify-content:space-between; align-items:center; background:var(--teal-dark); color:#fff; padding:12px 16px; border-radius:11px; margin-top:10px; font-family:var(--font-display); font-weight:600;}
+
+  /* ---------- ADD / EDIT QUOTE FORM ---------- */
+  .add-item-form{background:var(--surface); border:1px solid var(--line); border-radius:11px; padding:14px; margin-bottom:0;}
+  .form-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
+  .form-grid .full{grid-column:1/-1;}
+  @media (max-width:820px){ .form-grid{grid-template-columns:1fr 1fr;} }
+  .form-grid label{font-size:0.68rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; display:block; margin-bottom:4px;}
+  .form-grid select, .form-grid input[type=text], .form-grid input[type=date], .form-grid input[type=number]{
+    width:100%; border:1px solid var(--line); border-radius:7px; padding:7px 9px; font-size:0.82rem; font-family:var(--font-body); color:var(--ink);
+  }
+  .detalles-box{border:1px dashed var(--line); border-radius:10px; padding:10px; background:var(--bg);}
+  .detalle-row{display:flex; gap:8px; margin-bottom:6px;}
+  .detalle-row input{flex:1;}
+  .del-detalle{background:none; border:none; color:var(--muted); cursor:pointer; font-size:0.85rem; flex-shrink:0;}
+  .del-detalle:hover{color:var(--danger);}
+  .add-detalle{background:none; border:1px dashed var(--muted); color:var(--muted); border-radius:7px; padding:5px 10px; font-size:0.74rem; font-weight:700; cursor:pointer;}
+  .add-detalle:hover{border-color:var(--teal); color:var(--teal);}
+  .submitRow{display:flex; justify-content:flex-end; gap:8px; margin-top:12px;}
+
+  .btn-primary{background:var(--teal); color:#fff; border:none; padding:9px 16px; border-radius:8px; font-size:0.82rem; font-weight:700; cursor:pointer; font-family:var(--font-body); white-space:nowrap;}
+  .btn-primary:hover{background:var(--teal-dark);}
+  .btn-secondary{background:var(--surface); color:var(--teal-dark); border:1px solid var(--teal); padding:9px 16px; border-radius:8px; font-size:0.82rem; font-weight:700; cursor:pointer; font-family:var(--font-body);}
+  .btn-secondary:hover{background:var(--teal-soft);}
+  .link-btn{background:none; border:none; color:var(--teal-dark); font-size:0.76rem; font-weight:600; cursor:pointer; text-decoration:underline; padding:0; white-space:nowrap;}
+
+  /* ---------- TYPE CHIPS ---------- */
+  .type-chips{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
+  .chip{border:1px solid var(--line); background:var(--surface); color:var(--muted); padding:7px 14px; border-radius:20px; font-size:0.78rem; font-weight:700; cursor:pointer;}
+  .chip.active{background:var(--teal); border-color:var(--teal); color:#fff;}
+  .chip.chip-manage{border-style:dashed;}
+
+  /* ---------- QUOTE CARDS ---------- */
+  .cards-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(270px,1fr)); gap:14px;}
+  .quote-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; position:relative;}
+  .quote-card.destacada{border-color:var(--teal); box-shadow:0 0 0 1.5px var(--teal);}
+  .quote-card.is-added{border-color:var(--teal); background:var(--teal-soft);}
+  .quote-card.muted{opacity:.6;}
+  .qc-top{display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:6px;}
+  .qc-type{font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.03em; background:var(--teal-soft); color:var(--teal-dark); padding:3px 8px; border-radius:20px;}
+  .qc-estado{font-size:0.65rem; font-weight:700; padding:3px 8px; border-radius:20px; white-space:nowrap;}
+  .qc-estado.cotizado{background:var(--peach); color:var(--teal-dark);}
+  .qc-estado.apartado{background:#FCE8D8; color:var(--peach-dark);}
+  .qc-estado.reservado{background:#DDEFE9; color:var(--teal-dark);}
+  .qc-estado.descartado{background:#EFEFEF; color:var(--muted);}
+  .qc-title{font-family:var(--font-display); font-weight:700; font-size:0.98rem; margin:2px 0 2px; color:var(--ink);}
+  .qc-provider{font-size:0.76rem; color:var(--muted); margin-bottom:8px;}
+  .qc-dates{font-size:0.74rem; color:var(--muted); margin-bottom:8px;}
+  .qc-detalles{list-style:none; margin:0 0 10px; padding:0; border-top:1px dashed var(--line); padding-top:8px;}
+  .qc-detalles li{display:flex; justify-content:space-between; gap:8px; font-size:0.76rem; padding:2px 0;}
+  .qc-detalles li span:first-child{color:var(--muted); flex-shrink:0;}
+  .qc-detalles li span:last-child{text-align:right;}
+  .qc-price-row{display:flex; justify-content:space-between; align-items:center; background:var(--bg); border-radius:9px; padding:9px 12px;}
+  .qc-price{font-family:var(--font-display); font-weight:700; color:var(--teal-dark); font-size:1.05rem;}
+  .qc-actions{display:flex; justify-content:space-between; align-items:center; margin-top:10px;}
+
+  .toggle-btn{border:1px solid var(--teal); background:#fff; color:var(--teal-dark); padding:7px 12px; border-radius:20px; font-size:0.74rem; font-weight:700; cursor:pointer; white-space:nowrap; margin-top:10px; width:100%;}
+  .toggle-btn.added{background:var(--teal); color:#fff;}
+  .sel-remove{background:none; border:1px solid var(--line); color:var(--muted); cursor:pointer; font-size:0.74rem; font-weight:700; padding:6px 10px; border-radius:20px; margin-top:10px; width:100%;}
+  .sel-remove:hover{color:var(--danger); border-color:var(--danger); background:#FBEAE7;}
+
+  .sort-row{display:flex; justify-content:space-between; align-items:center; margin:18px 0 12px; flex-wrap:wrap; gap:8px;}
+  .sort-select{border:1px solid var(--line); border-radius:20px; padding:6px 12px; font-size:0.76rem; color:var(--ink); background:var(--surface); font-family:var(--font-body);}
+
+  /* ---------- COMPARE VIEW ---------- */
+  .compare-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px;}
+  .compare-card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:16px;}
+  .compare-card h3{font-family:var(--font-display); margin:0 0 2px; font-size:1.05rem; color:var(--teal-dark);}
+  .compare-card .dates{font-size:0.75rem; color:var(--muted); margin-bottom:10px;}
+  .compare-card ul{list-style:none; margin:0 0 10px; padding:0;}
+  .compare-card li{display:flex; justify-content:space-between; font-size:0.78rem; padding:4px 0; border-bottom:1px dashed var(--line);}
+  .compare-card li .cname{color:var(--ink);}
+  .compare-card li .camount{font-variant-numeric:tabular-nums; color:var(--muted);}
+  .compare-total{display:flex; justify-content:space-between; align-items:center; background:var(--teal-soft); border-radius:9px; padding:9px 12px; font-weight:700; color:var(--teal-dark); margin-bottom:8px;}
+  .compare-bar-track{background:var(--bg); border-radius:20px; height:8px; overflow:hidden; margin-top:4px;}
+  .compare-bar-fill{background:var(--peach-dark); height:100%; border-radius:20px;}
+  .compare-empty{color:var(--muted); font-size:0.78rem; text-align:center; padding:30px;}
+
+  /* ---------- TYPES MODAL ---------- */
+  .modal-overlay{position:fixed; inset:0; background:rgba(15,20,20,0.45); display:none; align-items:center; justify-content:center; z-index:50; padding:20px;}
+  .modal-box{background:var(--surface); border-radius:16px; width:100%; max-width:480px; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 12px 40px rgba(0,0,0,0.25);}
+  .modal-header{display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--line);}
+  .modal-header h2{font-family:var(--font-display); font-size:1.1rem; margin:0; color:var(--teal-dark);}
+  .modal-body{padding:14px 20px; overflow-y:auto; flex:1;}
+  .modal-hint{font-size:0.76rem; color:var(--muted); margin:0 0 12px;}
+  .cat-row{display:flex; align-items:center; gap:8px; margin-bottom:8px; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:7px 9px;}
+  .cat-icon-input{width:40px; text-align:center; border:1px solid var(--line); border-radius:7px; padding:5px; font-size:0.9rem;}
+  .cat-name-input2{flex:1; border:1px solid var(--line); border-radius:7px; padding:6px 8px; font-size:0.82rem; font-family:var(--font-body);}
+  .cat-count{font-size:0.68rem; color:var(--muted); white-space:nowrap;}
+  .modal-add-cat{display:flex; gap:8px; padding:14px 20px; border-top:1px solid var(--line);}
+</style>
+</head>
+<body>
+
+<header class="ka-hero">
+  <a href="index.html" class="ka-back">&larr; Volver al índice</a>
+  <div class="ka-mark"><span class="dot"></span>KA · Viajes</div>
+  <h1>Comparador de Cotizaciones</h1>
+  <p>Registrá cotizaciones de cualquier tipo (cruceros, hospedaje, autos, parques, vuelos...) y después armá viajes escogiendo cuáles incluir.</p>
+</header>
+
+<div class="fx-bar">
+  <div class="fx-box" title="Tipo de cambio: cuántos colones equivalen a 1 dólar">
+    <span>₡</span>
+    <input type="number" step="0.01" id="fxRateInput" data-action="fxRate" value="525">
+    <span>= $1</span>
+  </div>
+  <button class="btn btn-ghost btn-small" id="typesBtn">⚙ Tipos</button>
+</div>
+
+<div class="tabs" id="sectionTabsBar"></div>
+<div class="tabs" id="tripTabsBar" style="padding-top:0;"></div>
+<main>
+  <div class="panel" id="mainPanel"></div>
+</main>
+
+<footer class="ka-footer">
+  <div class="row" style="justify-content:center; gap:14px; display:flex; flex-wrap:wrap;">
+    <button class="btn btn-ghost btn-small" id="exportBtn">Exportar respaldo (JSON)</button>
+    <label class="btn btn-ghost btn-small" style="cursor:pointer;">
+      Importar respaldo
+      <input type="file" id="importFileInput" accept="application/json" style="display:none;">
+    </label>
+    <button class="btn btn-danger" id="btn-reset">Borrar todo</button>
+  </div>
+  <p style="margin-top:10px;">KA · Comparador de Cotizaciones — los datos se guardan solo en este navegador. Los precios se ingresan en dólares.</p>
+</footer>
+
+<!-- Types modal -->
+<div class="modal-overlay" id="typesModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Gestionar tipos</h2>
+      <button class="icon-btn" id="closeTypesModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-hint">Edita el ícono o nombre directamente. Si eliminas un tipo con cotizaciones, esas cotizaciones se reasignan a otro tipo.</p>
+      <div id="typesListContainer"></div>
+    </div>
+    <div class="modal-add-cat">
+      <input type="text" id="newTypeIcon" placeholder="🏷️" maxlength="4">
+      <input type="text" id="newTypeName" placeholder="Nombre del nuevo tipo">
+      <button class="btn-primary" id="addTypeBtn">+ Agregar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const STORAGE_KEY = "ka_comparador_cotizaciones_v1";
+  const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+  const uid = () => 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,8);
+
+  const DEFAULT_TYPES = [
+    {id:'tipo-crucero', name:'Crucero', icon:'🚢'},
+    {id:'tipo-hospedaje', name:'Hospedaje', icon:'🏨'},
+    {id:'tipo-auto', name:'Alquiler de Auto', icon:'🚗'},
+    {id:'tipo-parque', name:'Parque / Entradas', icon:'🎟️'},
+    {id:'tipo-vuelo', name:'Vuelos', icon:'✈️'},
+    {id:'tipo-otro', name:'Otros', icon:'📦'}
+  ];
+
+  function freshState(){
+    const tripId = uid();
+    return {
+      exchangeRate:525,
+      displayCurrency:'USD',
+      types: JSON.parse(JSON.stringify(DEFAULT_TYPES)),
+      quotes: [], // {id, typeId, provider, name, start, end, price(USD), status, details:[{label,value}]}
+      trips: [
+        {id:tripId, name:'Viaje 1', start:'', end:'', selections:{}} // selections: { [quoteId]: true }
+      ],
+      activeTripId: tripId,
+      section:'quotes' // 'quotes' | 'trip' | 'compare'
+    };
+  }
+
+  let state = freshState();
+  let editingQuoteId = null;   // transient, not persisted
+  let catalogFilterType = 'all'; // transient, shared between Cotizaciones tab and Viaje catalog
+  let sortMode = 'price_asc';    // transient
+  let cheapestSet = new Set();   // recomputed each render
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){ state = Object.assign(freshState(), JSON.parse(raw)); }
+    }catch(e){ console.error("Error cargando datos:", e); }
+    if(!state.activeTripId || !getTrip(state.activeTripId)){
+      state.activeTripId = state.trips[0] ? state.trips[0].id : null;
+    }
+    if(state.section!=='quotes' && state.section!=='compare') state.section='trip';
+  }
+  function save(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch(e){ console.error("Error guardando datos:", e); }
+  }
+
+  // ---------------- HELPERS ----------------
+  function fmtUSD(amount){
+    const n = Number(amount)||0;
+    return '$ ' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+  function fmtDisplay(amountUSD){
+    const n = Number(amountUSD)||0;
+    if(state.displayCurrency==='CRC'){
+      const crc = n * (Number(state.exchangeRate)||0);
+      return '₡ ' + crc.toLocaleString('es-CR', {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+    return fmtUSD(n);
+  }
+  function fmtDateShort(d){
+    if(!d) return null;
+    const parts = d.split('-');
+    if(parts.length!==3) return d;
+    const [y,m,day] = parts;
+    const mi = parseInt(m,10)-1;
+    if(mi<0||mi>11) return d;
+    return `${parseInt(day,10)} ${MESES[mi]} ${y}`;
+  }
+  function fmtDateRange(start,end){
+    const s = fmtDateShort(start), e = fmtDateShort(end);
+    if(!s && !e) return 'Fechas sin definir';
+    if(s && e) return `${s} → ${e}`;
+    return s || e;
+  }
+  function statusLabel(s){
+    return {cotizado:'Cotizado',apartado:'Apartado',reservado:'Reservado',descartado:'Descartado'}[s] || 'Cotizado';
+  }
+  function escapeHtml(str){
+    return String(str==null?'':str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function getTrip(id){ return state.trips.find(t=>t.id===id); }
+  function getQuote(id){ return state.quotes.find(q=>q.id===id); }
+  function getType(id){ return state.types.find(t=>t.id===id) || {name:'Otros', icon:'📦'}; }
+
+  function getSelectedQuotes(trip){
+    return Object.keys(trip.selections)
+      .filter(qid => trip.selections[qid])
+      .map(qid => getQuote(qid))
+      .filter(Boolean);
+  }
+  function tripTotalUSD(trip){
+    return getSelectedQuotes(trip).reduce((s,q)=> s + (Number(q.price)||0), 0);
+  }
+  function filteredQuotes(){
+    return state.quotes.filter(q => catalogFilterType==='all' || q.typeId===catalogFilterType);
+  }
+  function sortQuotes(list){
+    const arr = list.slice();
+    if(sortMode==='price_asc') arr.sort((a,b)=>(Number(a.price)||0)-(Number(b.price)||0));
+    else if(sortMode==='price_desc') arr.sort((a,b)=>(Number(b.price)||0)-(Number(a.price)||0));
+    else if(sortMode==='date') arr.sort((a,b)=>(a.start||'9999').localeCompare(b.start||'9999'));
+    else if(sortMode==='provider') arr.sort((a,b)=>(a.provider||'').localeCompare(b.provider||''));
+    return arr;
+  }
+  function computeCheapestSet(){
+    const map = {};
+    state.quotes.forEach(q=>{
+      if(!q.price) return;
+      if(!map[q.typeId] || q.price < map[q.typeId].price){ map[q.typeId] = {id:q.id, price:q.price}; }
+    });
+    cheapestSet = new Set(Object.values(map).map(v=>v.id));
+  }
+
+  // ---------------- QUOTE FORM (shared by add + edit) ----------------
+  function detalleRowHTML(label,value){
+    return `<div class="detalle-row"><input type="text" class="f-label" placeholder="Etiqueta (ej. Barco)" value="${escapeHtml(label)}"><input type="text" class="f-value" placeholder="Valor (ej. Disney Dream)" value="${escapeHtml(value)}"><button type="button" class="del-detalle" data-action="removeDetalleRow" title="Quitar">✕</button></div>`;
+  }
+  function quoteFormFieldsHTML(q){
+    q = q || {typeId:(state.types[0]?state.types[0].id:''), provider:'', name:'', status:'cotizado', start:'', end:'', price:'', details:[]};
+    const typeOptions = state.types.map(t=>`<option value="${t.id}" ${t.id===q.typeId?'selected':''}>${t.icon} ${escapeHtml(t.name)}</option>`).join('');
+    const rows = (q.details && q.details.length ? q.details : [{label:'',value:''}]).map(d=>detalleRowHTML(d.label,d.value)).join('');
+    return `
+      <div class="form-grid">
+        <div><label>Tipo</label><select class="f-type">${typeOptions}</select></div>
+        <div><label>Proveedor / marca</label><input type="text" class="f-provider" value="${escapeHtml(q.provider)}" placeholder="Ej. Disney Cruise Line"></div>
+        <div><label>Estado</label><select class="f-status">
+          ${['cotizado','apartado','reservado','descartado'].map(s=>`<option value="${s}" ${s===q.status?'selected':''}>${statusLabel(s)}</option>`).join('')}
+        </select></div>
+        <div class="full"><label>Nombre / descripción corta</label><input type="text" class="f-name" value="${escapeHtml(q.name)}" placeholder="Ej. Disney Dream — 4 noches Bahamas, camarote Balcony"></div>
+        <div><label>Fecha inicio</label><input type="date" class="f-start" value="${q.start||''}"></div>
+        <div><label>Fecha fin</label><input type="date" class="f-end" value="${q.end||''}"></div>
+        <div><label>Precio total ($)</label><input type="number" step="0.01" class="f-price" value="${q.price||''}" placeholder="0.00"></div>
+        <div class="full">
+          <label>Detalles (etiqueta : valor — libres según el tipo)</label>
+          <div class="detalles-box f-detalles">
+            ${rows}
+            <button type="button" class="add-detalle" data-action="addDetalleRow">+ Agregar detalle</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  function readQuoteFormValues(container){
+    return {
+      typeId: container.querySelector('.f-type').value,
+      provider: container.querySelector('.f-provider').value.trim(),
+      name: container.querySelector('.f-name').value.trim(),
+      status: container.querySelector('.f-status').value,
+      start: container.querySelector('.f-start').value,
+      end: container.querySelector('.f-end').value,
+      price: parseFloat(container.querySelector('.f-price').value)||0,
+      details: Array.from(container.querySelectorAll('.f-detalles .detalle-row')).map(r=>({
+        label:r.querySelector('.f-label').value.trim(),
+        value:r.querySelector('.f-value').value.trim()
+      })).filter(d=>d.label||d.value)
+    };
+  }
+
+  // ---------------- QUOTE CARD ----------------
+  function quoteCardInner(q){
+    const t = getType(q.typeId);
+    return `
+      <div class="qc-top">
+        <span class="qc-type">${t.icon} ${escapeHtml(t.name)}</span>
+        <span class="qc-estado ${q.status}">${statusLabel(q.status)}</span>
+      </div>
+      <div class="qc-title">${escapeHtml(q.name||'(sin nombre)')}</div>
+      ${q.provider ? `<div class="qc-provider">${escapeHtml(q.provider)}</div>` : ''}
+      <div class="qc-dates">📅 ${fmtDateRange(q.start,q.end)}</div>
+      ${q.details && q.details.length ? `<ul class="qc-detalles">${q.details.map(d=>`<li><span>${escapeHtml(d.label)}</span><span>${escapeHtml(d.value)}</span></li>`).join('')}</ul>` : ''}
+      <div class="qc-price-row"><div class="qc-price">${fmtDisplay(q.price)}</div></div>
+    `;
+  }
+  // mode: 'manage' (Cotizaciones tab), 'catalog' (right col. de un viaje), 'included' (izq. de un viaje)
+  function renderQuoteCard(q, mode, trip){
+    if(mode==='manage' && editingQuoteId===q.id){
+      return `<div class="add-item-form edit-quote-form" data-id="${q.id}">
+        ${quoteFormFieldsHTML(q)}
+        <div class="submitRow">
+          <button class="btn-secondary" data-action="cancelEditQuote">Cancelar</button>
+          <button class="btn-primary" data-action="saveQuoteEdit" data-id="${q.id}">💾 Guardar cambios</button>
+        </div>
+      </div>`;
+    }
+    const destacada = cheapestSet.has(q.id) ? ' destacada' : '';
+    const muted = q.status==='descartado' ? ' muted' : '';
+    if(mode==='catalog'){
+      const added = trip && !!trip.selections[q.id];
+      return `<div class="quote-card${destacada}${muted}${added?' is-added':''}" data-id="${q.id}">
+        ${quoteCardInner(q)}
+        <button class="toggle-btn ${added?'added':''}" data-action="toggleSelection" data-trip="${trip.id}" data-quote="${q.id}">
+          ${added?'✓ Incluida en este viaje':'+ Incluir en este viaje'}
+        </button>
+      </div>`;
+    }
+    if(mode==='included'){
+      return `<div class="quote-card${destacada}${muted}" data-id="${q.id}">
+        ${quoteCardInner(q)}
+        <button class="sel-remove" data-action="removeSelection" data-trip="${trip.id}" data-quote="${q.id}">✕ Quitar del viaje</button>
+      </div>`;
+    }
+    // manage (read-only display)
+    return `<div class="quote-card${destacada}${muted}" data-id="${q.id}">
+      ${quoteCardInner(q)}
+      <div class="qc-actions">
+        <button class="link-btn" data-action="editQuote" data-id="${q.id}">✏️ Editar</button>
+        <button class="icon-btn danger" data-action="deleteQuote" data-id="${q.id}" title="Eliminar">🗑</button>
+      </div>
+    </div>`;
+  }
+
+  function renderTypeChipsHTML(){
+    let html = `<div class="type-chips">`;
+    html += `<button class="chip ${catalogFilterType==='all'?'active':''}" data-action="setQuoteFilter" data-val="all">Todos (${state.quotes.length})</button>`;
+    state.types.forEach(t=>{
+      const c = state.quotes.filter(q=>q.typeId===t.id).length;
+      html += `<button class="chip ${catalogFilterType===t.id?'active':''}" data-action="setQuoteFilter" data-val="${t.id}">${t.icon} ${escapeHtml(t.name)} (${c})</button>`;
+    });
+    html += `</div>`;
+    return html;
+  }
+
+  // ---------------- RENDER: TOP NAV ----------------
+  function renderSectionTabs(){
+    const bar = document.getElementById('sectionTabsBar');
+    const qActive = state.section==='quotes' ? ' active' : '';
+    const tActive = (state.section==='trip'||state.section==='compare') ? ' active' : '';
+    bar.innerHTML = `
+      <button class="tab-btn main-tab${qActive}" data-action="setSection" data-val="quotes">📋 Cotizaciones</button>
+      <button class="tab-btn main-tab${tActive}" data-action="setSection" data-val="trips">🧳 Viajes</button>
+    `;
+  }
+  function renderTripTabsBar(){
+    const bar = document.getElementById('tripTabsBar');
+    if(state.section==='quotes'){ bar.innerHTML=''; bar.style.display='none'; return; }
+    bar.style.display='flex';
+    let html = '';
+    state.trips.forEach(t=>{
+      const active = (state.section==='trip' && state.activeTripId===t.id) ? ' active' : '';
+      html += `<button class="tab-btn${active}" data-action="selectTrip" data-id="${t.id}">${escapeHtml(t.name||'Viaje')}</button>`;
+    });
+    html += `<button class="tab-add" data-action="addTrip">+ Nuevo viaje</button>`;
+    if(state.trips.length>1){
+      const cmpActive = state.section==='compare' ? ' active' : '';
+      html += `<button class="tab-btn compare-tab${cmpActive}" data-action="showCompare">⇄ Comparar (${state.trips.length})</button>`;
+    }
+    bar.innerHTML = html;
+  }
+
+  // ---------------- RENDER: COTIZACIONES ----------------
+  function renderQuotesSection(){
+    const panel = document.getElementById('mainPanel');
+    const sorted = sortQuotes(filteredQuotes());
+    panel.innerHTML = `
+      <h2 style="font-family:var(--font-display); font-size:1.05rem; color:var(--teal-dark); margin:0 0 4px;">Cotizaciones</h2>
+      <p style="font-size:0.8rem; color:var(--muted); margin:0 0 16px;">Registrá cualquier tipo de cotización — después armá viajes con las que te interesen desde la pestaña "Viajes".</p>
+      <div class="panel" style="padding:18px; margin-bottom:16px;">
+        <h3 class="col-title" style="margin-bottom:10px;">+ Agregar cotización</h3>
+        <div id="addQuoteForm">${quoteFormFieldsHTML(null)}</div>
+        <div class="submitRow"><button class="btn-primary" data-action="submitNewQuote">+ Guardar cotización</button></div>
+      </div>
+      ${renderTypeChipsHTML()}
+      <div class="sort-row">
+        <h3 class="col-title">Cotizaciones registradas <span class="count">${sorted.length}</span></h3>
+        <select class="sort-select" id="sortSelect">
+          <option value="price_asc" ${sortMode==='price_asc'?'selected':''}>Precio (menor a mayor)</option>
+          <option value="price_desc" ${sortMode==='price_desc'?'selected':''}>Precio (mayor a menor)</option>
+          <option value="date" ${sortMode==='date'?'selected':''}>Fecha de inicio</option>
+          <option value="provider" ${sortMode==='provider'?'selected':''}>Proveedor</option>
+        </select>
+      </div>
+      ${sorted.length ? `<div class="cards-grid">${sorted.map(q=>renderQuoteCard(q,'manage')).join('')}</div>` : `<div class="empty-state">Todavía no hay cotizaciones${catalogFilterType!=='all'?' de este tipo':''}.<br>Agregá la primera arriba.</div>`}
+    `;
+    const sortSel = document.getElementById('sortSelect');
+    if(sortSel) sortSel.addEventListener('change', (e)=>{ sortMode = e.target.value; renderQuotesSection(); });
+  }
+
+  // ---------------- RENDER: TRIP EDITOR ----------------
+  function renderTripSection(){
+    const trip = getTrip(state.activeTripId);
+    const panel = document.getElementById('mainPanel');
+    if(!trip){ panel.innerHTML = '<div class="empty-state">No hay viaje seleccionado.</div>'; return; }
+
+    const total = tripTotalUSD(trip);
+    const selItems = getSelectedQuotes(trip);
+    const selCount = selItems.length;
+
+    const header = `
+      <div class="trip-header">
+        <div class="trip-header-main">
+          <input class="trip-name-input" data-action="editTripName" data-id="${trip.id}" value="${escapeHtml(trip.name)}" placeholder="Nombre del viaje">
+          <div class="trip-dates">
+            <span>Del</span>
+            <input type="date" data-action="editTripStart" data-id="${trip.id}" value="${trip.start||''}">
+            <div class="route-line"></div>
+            <span>al</span>
+            <input type="date" data-action="editTripEnd" data-id="${trip.id}" value="${trip.end||''}">
+          </div>
+        </div>
+        <div class="trip-actions">
+          <div class="trip-total-box">
+            <div class="label">Total (${selCount} rubro${selCount===1?'':'s'})</div>
+            <div class="amount">${fmtDisplay(total)}</div>
+          </div>
+          <button class="icon-btn" data-action="duplicateTrip" data-id="${trip.id}" title="Duplicar viaje">⧉</button>
+          <button class="icon-btn danger" data-action="removeTrip" data-id="${trip.id}" title="Eliminar viaje">🗑</button>
+        </div>
+      </div>
+    `;
+
+    const leftHTML = selItems.length
+      ? `<div class="card-list">${selItems.map(q=>renderQuoteCard(q,'included',trip)).join('')}</div>`
+      : `<div class="empty-state">Aún no has incluido cotizaciones.<br>Elegilas desde el catálogo de la derecha →</div>`;
+
+    const catalogList = filteredQuotes();
+    const rightHTML = `
+      <h3 class="col-title" style="margin-bottom:10px;">Catálogo de cotizaciones <span class="count">${state.quotes.length}</span></h3>
+      ${renderTypeChipsHTML()}
+      ${catalogList.length
+        ? `<div class="card-list">${catalogList.map(q=>renderQuoteCard(q,'catalog',trip)).join('')}</div>`
+        : `<div class="empty-state">${state.quotes.length===0 ? 'Todavía no hay cotizaciones registradas.' : 'No hay cotizaciones de este tipo.'}<br><button class="link-btn" data-action="goToQuotesTab">Ir a Cotizaciones</button></div>`
+      }
+    `;
+
+    panel.innerHTML = header + `
+      <div class="cols">
+        <div>
+          <div class="col-title-row">
+            <h3 class="col-title">Incluidas en este viaje <span class="count">${selCount}</span></h3>
+            <div class="currency-toggle">
+              <button class="ctog-btn ${state.displayCurrency==='USD'?'active':''}" data-action="setDisplayCurrency" data-val="USD">$</button>
+              <button class="ctog-btn ${state.displayCurrency==='CRC'?'active':''}" data-action="setDisplayCurrency" data-val="CRC">₡</button>
+            </div>
+          </div>
+          ${leftHTML}
+          <div class="total-row"><span>Total del viaje</span><span>${fmtDisplay(total)}</span></div>
+        </div>
+        <div>${rightHTML}</div>
+      </div>
+    `;
+  }
+
+  // ---------------- RENDER: COMPARE ----------------
+  function renderCompareSection(){
+    const panel = document.getElementById('mainPanel');
+    if(state.trips.length===0){
+      panel.innerHTML = `<div class="compare-empty">No hay viajes para comparar.</div>`;
+      return;
+    }
+    const totals = state.trips.map(t=>tripTotalUSD(t));
+    const maxTotal = Math.max(1, ...totals);
+
+    const cards = state.trips.map((t,idx)=>{
+      const total = totals[idx];
+      const pct = Math.round((total/maxTotal)*100);
+      const dateStr = (t.start||t.end) ? `${t.start||'—'} → ${t.end||'—'}` : 'Fechas sin definir';
+      const items = getSelectedQuotes(t);
+      const list = items.length ? items.map(q=>`
+        <li><span class="cname">${getType(q.typeId).icon} ${escapeHtml(q.name)}</span><span class="camount">${fmtDisplay(q.price)}</span></li>
+      `).join('') : `<li style="justify-content:center; color:var(--muted);">Sin cotizaciones incluidas</li>`;
+
+      return `
+        <div class="compare-card">
+          <h3>${escapeHtml(t.name)}</h3>
+          <div class="dates">${dateStr}</div>
+          <div class="compare-total"><span>Total</span><span>${fmtDisplay(total)}</span></div>
+          <div class="compare-bar-track"><div class="compare-bar-fill" style="width:${pct}%"></div></div>
+          <ul style="margin-top:12px;">${list}</ul>
+        </div>
+      `;
+    }).join('');
+
+    panel.innerHTML = `<div class="compare-grid">${cards}</div>`;
+  }
+
+  // ---------------- MASTER RENDER ----------------
+  function render(){
+    save();
+    document.getElementById('fxRateInput').value = state.exchangeRate;
+    computeCheapestSet();
+    renderSectionTabs();
+    renderTripTabsBar();
+    if(state.section==='quotes') renderQuotesSection();
+    else if(state.section==='compare') renderCompareSection();
+    else renderTripSection();
+  }
+
+  // ---------------- TYPES MODAL ----------------
+  function renderTypesModal(){
+    const container = document.getElementById('typesListContainer');
+    container.innerHTML = state.types.map(t=>{
+      const count = state.quotes.filter(q=>q.typeId===t.id).length;
+      return `
+        <div class="cat-row">
+          <input class="cat-icon-input" data-action="editTypeIcon" data-id="${t.id}" value="${escapeHtml(t.icon||'')}" maxlength="4">
+          <input class="cat-name-input2" data-action="editTypeName" data-id="${t.id}" value="${escapeHtml(t.name)}">
+          <span class="cat-count">${count} cotiz.</span>
+          <button class="icon-btn danger" data-action="deleteType" data-id="${t.id}" title="Eliminar tipo">🗑</button>
+        </div>
+      `;
+    }).join('');
+  }
+  function openTypesModal(){ renderTypesModal(); document.getElementById('typesModal').style.display='flex'; }
+  function closeTypesModal(){ document.getElementById('typesModal').style.display='none'; }
+  function addTypeFromModal(){
+    const iconInput = document.getElementById('newTypeIcon');
+    const nameInput = document.getElementById('newTypeName');
+    const name = nameInput.value.trim();
+    if(!name){ nameInput.focus(); return; }
+    const icon = iconInput.value.trim() || '🏷️';
+    state.types.push({id:uid(), name, icon});
+    iconInput.value=''; nameInput.value='';
+    renderTypesModal();
+    render();
+  }
+  function deleteType(id){
+    if(state.types.length<=1){ alert('Debe existir al menos un tipo.'); return; }
+    const itemsInType = state.quotes.filter(q=>q.typeId===id);
+    if(itemsInType.length>0){
+      if(!confirm(`Este tipo tiene ${itemsInType.length} cotización(es). Si lo eliminas, esas cotizaciones se moverán a otro tipo. ¿Continuar?`)) return;
+      const target = state.types.find(t=>t.id==='tipo-otro' && t.id!==id) || state.types.find(t=>t.id!==id);
+      itemsInType.forEach(q => q.typeId = target.id);
+    }
+    state.types = state.types.filter(t=>t.id!==id);
+    if(catalogFilterType===id) catalogFilterType='all';
+    renderTypesModal();
+    render();
+  }
+
+  // ---------------- ACTIONS: TRIPS ----------------
+  function addTrip(){
+    const id = uid();
+    state.trips.push({id, name:`Viaje ${state.trips.length+1}`, start:'', end:'', selections:{}});
+    state.activeTripId = id;
+    state.section='trip';
+    render();
+  }
+  function removeTrip(id){
+    if(state.trips.length<=1){ alert('Debe quedar al menos un viaje.'); return; }
+    if(!confirm('¿Eliminar este viaje y sus cotizaciones incluidas?')) return;
+    state.trips = state.trips.filter(t=>t.id!==id);
+    if(state.activeTripId===id) state.activeTripId = state.trips[0].id;
+    if(state.trips.length<=1) state.section='trip';
+    render();
+  }
+  function duplicateTrip(id){
+    const t = getTrip(id);
+    if(!t) return;
+    const copy = JSON.parse(JSON.stringify(t));
+    copy.id = uid();
+    copy.name = t.name + ' (copia)';
+    state.trips.push(copy);
+    state.activeTripId = copy.id;
+    state.section='trip';
+    render();
+  }
+  function toggleSelection(tripId, quoteId){
+    const trip = getTrip(tripId);
+    const q = getQuote(quoteId);
+    if(!trip || !q) return;
+    if(trip.selections[quoteId]) delete trip.selections[quoteId];
+    else trip.selections[quoteId] = true;
+    render();
+  }
+  function removeSelection(tripId, quoteId){
+    const trip = getTrip(tripId);
+    if(!trip) return;
+    delete trip.selections[quoteId];
+    render();
+  }
+
+  // ---------------- ACTIONS: QUOTES ----------------
+  function submitNewQuote(){
+    const container = document.getElementById('addQuoteForm');
+    if(!container) return;
+    const vals = readQuoteFormValues(container);
+    if(!vals.name){ container.querySelector('.f-name').focus(); return; }
+    state.quotes.push(Object.assign({id:uid()}, vals));
+    render();
+  }
+  function editQuote(id){ editingQuoteId = id; render(); }
+  function cancelEditQuote(){ editingQuoteId = null; render(); }
+  function saveQuoteEdit(id){
+    const container = document.querySelector(`.edit-quote-form[data-id="${id}"]`);
+    const q = getQuote(id);
+    if(!container || !q) return;
+    const vals = readQuoteFormValues(container);
+    if(!vals.name){ container.querySelector('.f-name').focus(); return; }
+    Object.assign(q, vals);
+    editingQuoteId = null;
+    render();
+  }
+  function deleteQuote(id){
+    if(!confirm('¿Eliminar esta cotización? Se quitará también de todos los viajes que la tengan incluida.')) return;
+    state.quotes = state.quotes.filter(q=>q.id!==id);
+    state.trips.forEach(t => { delete t.selections[id]; });
+    if(editingQuoteId===id) editingQuoteId = null;
+    render();
+  }
+
+  // ---------------- EXPORT / IMPORT / RESET ----------------
+  function exportJSON(){
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const today = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `comparador-cotizaciones-${today}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+  function importJSON(file){
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try{
+        const data = JSON.parse(e.target.result);
+        if(!data.trips || !Array.isArray(data.trips) || !Array.isArray(data.quotes)) throw new Error('Formato inválido');
+        state = Object.assign(freshState(), data);
+        if(!state.activeTripId || !getTrip(state.activeTripId)){
+          state.activeTripId = state.trips[0] ? state.trips[0].id : null;
+        }
+        state.section = 'quotes';
+        editingQuoteId = null;
+        render();
+      }catch(err){
+        alert('No se pudo leer el archivo. Verifica que sea un JSON exportado desde esta herramienta.');
+      }
+    };
+    reader.readAsText(file);
+  }
+  function resetAll(){
+    if(!confirm('Esto borra todos los datos guardados en este navegador. ¿Continuar?')) return;
+    state = freshState();
+    editingQuoteId = null;
+    render();
+  }
+
+  // ---------------- EVENT DELEGATION: CLICK ----------------
+  document.addEventListener('click', (e)=>{
+    const el = e.target.closest('[data-action]');
+    if(!el) return;
+    const action = el.dataset.action;
+    const id = el.dataset.id;
+    const tripId = el.dataset.trip;
+    const quoteId = el.dataset.quote;
+
+    switch(action){
+      case 'setSection':
+        if(el.dataset.val==='quotes'){ state.section='quotes'; }
+        else { state.section = (state.section==='compare') ? 'compare' : 'trip'; }
+        render();
+        break;
+      case 'goToQuotesTab': state.section='quotes'; render(); break;
+      case 'selectTrip': state.activeTripId = id; state.section='trip'; render(); break;
+      case 'addTrip': addTrip(); break;
+      case 'showCompare': state.section='compare'; render(); break;
+      case 'removeTrip': removeTrip(id); break;
+      case 'duplicateTrip': duplicateTrip(id); break;
+      case 'toggleSelection': toggleSelection(tripId, quoteId); break;
+      case 'removeSelection': removeSelection(tripId, quoteId); break;
+      case 'setDisplayCurrency': state.displayCurrency = el.dataset.val; render(); break;
+      case 'setQuoteFilter': catalogFilterType = el.dataset.val; render(); break;
+      case 'addDetalleRow': {
+        const box = el.closest('.f-detalles');
+        if(box) el.insertAdjacentHTML('beforebegin', detalleRowHTML('',''));
+        break;
+      }
+      case 'removeDetalleRow': {
+        const row = el.closest('.detalle-row');
+        if(row) row.remove();
+        break;
+      }
+      case 'submitNewQuote': submitNewQuote(); break;
+      case 'editQuote': editQuote(id); break;
+      case 'cancelEditQuote': cancelEditQuote(); break;
+      case 'saveQuoteEdit': saveQuoteEdit(id); break;
+      case 'deleteQuote': deleteQuote(id); break;
+      case 'deleteType': deleteType(id); break;
+    }
+  });
+
+  // ---------------- EVENT DELEGATION: INPUT ----------------
+  document.addEventListener('input', (e)=>{
+    const el = e.target.closest('[data-action]');
+    if(!el) return;
+    const action = el.dataset.action;
+    const tripId = el.dataset.id;
+    const dataId = el.dataset.id;
+
+    switch(action){
+      case 'editTripName': { const t=getTrip(tripId); if(t){ t.name=el.value; renderTripTabsBar(); save(); } break; }
+      case 'editTripStart': { const t=getTrip(tripId); if(t){ t.start=el.value; save(); } break; }
+      case 'editTripEnd': { const t=getTrip(tripId); if(t){ t.end=el.value; save(); } break; }
+      case 'fxRate': { state.exchangeRate=parseFloat(el.value)||0; save(); if(state.section==='trip') renderTripSection(); else if(state.section==='compare') renderCompareSection(); break; }
+      case 'editTypeIcon': { const t=state.types.find(t=>t.id===dataId); if(t){ t.icon=el.value; render(); } break; }
+      case 'editTypeName': { const t=state.types.find(t=>t.id===dataId); if(t){ t.name=el.value; render(); } break; }
+    }
+  });
+
+  // ---------------- STATIC UI WIRING ----------------
+  document.getElementById('exportBtn').addEventListener('click', exportJSON);
+  document.getElementById('importFileInput').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(file) importJSON(file);
+    e.target.value = '';
+  });
+  document.getElementById('btn-reset').addEventListener('click', resetAll);
+  document.getElementById('typesBtn').addEventListener('click', openTypesModal);
+  document.getElementById('closeTypesModal').addEventListener('click', closeTypesModal);
+  document.getElementById('typesModal').addEventListener('click', (e)=>{
+    if(e.target.id==='typesModal') closeTypesModal();
+  });
+  document.getElementById('addTypeBtn').addEventListener('click', addTypeFromModal);
+
+  // ---------------- INIT ----------------
+  load();
+  render();
+})();
+</script>
+</body>
+</html>

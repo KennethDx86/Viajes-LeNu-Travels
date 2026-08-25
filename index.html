@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es-CR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KA · Viajes LeNu Travels</title>
+<style>
+  :root{
+    --ka-primary:#1B6B64;
+    --ka-secondary:#F2C4A4;
+    --ka-accent:#DD8B5D;
+    --ka-accent-hover:#C6763F;
+    --ka-dark:#1D1B3A;
+    --ka-light:#D9E5DD;
+    --ka-base:#FAF3EC;
+    --ka-base-sobria:#F4F6F5;
+    --line:#E4DACE;
+    --muted:#8b8578;
+    --font-display:Arial, Helvetica, sans-serif;
+    --font-body:Arial, Helvetica, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--ka-base-sobria); color:var(--ka-dark); font-family:var(--font-body); -webkit-font-smoothing:antialiased;}
+
+  header.ka-hero{background:linear-gradient(120deg, var(--ka-primary) 0%, #134F49 100%); color:#fff; padding:34px 32px 28px; position:relative; overflow:hidden;}
+  header.ka-hero::after{content:""; position:absolute; right:-40px; top:-60px; width:220px; height:220px; border-radius:50%; background:var(--ka-secondary); opacity:.18;}
+  header.ka-hero .ka-mark{display:inline-flex; align-items:center; gap:10px; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--ka-secondary); font-weight:bold;}
+  header.ka-hero .ka-mark span.dot{width:8px;height:8px;border-radius:50%; background:var(--ka-accent); display:inline-block;}
+  header.ka-hero h1{margin:10px 0 4px; font-size:1.7rem; font-family:var(--font-display); letter-spacing:-0.02em;}
+  header.ka-hero p{margin:0; color:var(--ka-light); font-size:0.9rem; max-width:600px;}
+
+  main{max-width:900px; margin:0 auto; padding:28px 32px 48px;}
+  .cards{display:grid; grid-template-columns:repeat(auto-fit, minmax(280px,1fr)); gap:18px;}
+  .tool-card{
+    background:#fff; border:1px solid var(--line); border-radius:16px; padding:22px;
+    text-decoration:none; color:inherit; display:block; transition:border-color .15s, box-shadow .15s;
+  }
+  .tool-card:hover{border-color:var(--ka-primary); box-shadow:0 4px 16px rgba(27,107,100,0.12);}
+  .tool-card .icon{font-size:1.8rem; margin-bottom:10px; display:block;}
+  .tool-card h2{font-family:var(--font-display); font-size:1.1rem; margin:0 0 6px; color:var(--ka-primary);}
+  .tool-card p{font-size:0.85rem; color:var(--muted); margin:0; line-height:1.4;}
+
+  footer{text-align:center; font-size:11px; color:var(--muted); padding:20px;}
+</style>
+</head>
+<body>
+
+<header class="ka-hero">
+  <div class="ka-mark"><span class="dot"></span>KA · Viajes LeNu Travels</div>
+  <h1>Herramientas de cotización de viajes</h1>
+  <p>Compará opciones y armá el presupuesto de cada viaje, propio o de futuros viajeros.</p>
+</header>
+
+<main>
+  <div class="cards">
+    <a class="tool-card" href="comparador-cotizaciones.html">
+      <span class="icon">📋</span>
+      <h2>Comparador de Cotizaciones</h2>
+      <p>Registrá cotizaciones de cruceros, hospedaje, autos, parques y más. Compará precios y detalles antes de decidir.</p>
+    </a>
+    <a class="tool-card" href="cotizador-viajes.html">
+      <span class="icon">🧳</span>
+      <h2>Cotizador de Viajes</h2>
+      <p>Armá el presupuesto de un viaje por rubros (hospedaje, vuelos, comidas, etc.) y compará totales entre viajes.</p>
+    </a>
+  </div>
+</main>
+
+<footer>KA · Viajes LeNu Travels — herramientas de uso personal.</footer>
+
+</body>
+</html>

@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="es-CR">
+<head>
+<meta name="kla-published" content="2026-08-09T07:31:29-06:00">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KA · Cotizador de Viajes</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#1D1B3A">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KA Personal">
+<style>
+  :root{
+    --ka-primary:#1B6B64;
+    --ka-secondary:#F2C4A4;
+    --ka-accent:#DD8B5D;
+    --ka-accent-hover:#C6763F;
+    --ka-dark:#1D1B3A;
+    --ka-light:#D9E5DD;
+    --ka-base:#FAF3EC;
+    --ka-base-sobria:#F4F6F5;
+    --warn:#C0562E;
+    --line:#E4DACE;
+
+    /* Alias que usan los estilos propios de este cotizador — mismos valores que la marca KLA */
+    --teal:var(--ka-primary);
+    --teal-dark:#134F49;
+    --teal-soft:var(--ka-base-sobria);
+    --peach:var(--ka-secondary);
+    --peach-dark:var(--ka-accent);
+    --bg:var(--ka-base-sobria);
+    --surface:#FFFFFF;
+    --ink:var(--ka-dark);
+    --muted:#8b8578;
+    --danger:var(--warn);
+    --radius:14px;
+    --font-display:Arial, Helvetica, sans-serif;
+    --font-body:Arial, Helvetica, sans-serif;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:60px;
+  }
+
+  ::selection{background:var(--peach); color:var(--teal-dark);}
+
+  /* ---------- HEADER (mismo patrón que el resto del repo) ---------- */
+  header.ka-hero{
+    background:linear-gradient(120deg, var(--ka-primary) 0%, #134F49 100%);
+    color:#fff; padding:28px 32px 22px; position:relative; overflow:hidden;
+  }
+  header.ka-hero::after{
+    content:""; position:absolute; right:-40px; top:-60px; width:220px; height:220px;
+    border-radius:50%; background:var(--ka-secondary); opacity:.18;
+  }
+  header.ka-hero .ka-mark{
+    display:inline-flex; align-items:center; gap:10px; font-size:13px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--ka-secondary); font-weight:bold;
+  }
+  header.ka-hero .ka-mark span.dot{width:8px;height:8px;border-radius:50%; background:var(--ka-accent); display:inline-block;}
+  header.ka-hero .ka-back{display:inline-flex; align-items:center; gap:5px; font-size:12px; color:var(--ka-light); text-decoration:none; opacity:.85; margin-bottom:10px;}
+  header.ka-hero .ka-back:hover{opacity:1; text-decoration:underline;}
+  header.ka-hero h1{margin:10px 0 4px; font-size:1.5rem; font-family:var(--font-display); letter-spacing:-0.02em;}
+  header.ka-hero p{margin:0; color:var(--ka-light); font-size:0.85rem; max-width:560px;}
+
+  /* ---------- BARRA DE CONTROLES (tipo de cambio + categorías) ---------- */
+  .fx-bar{display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:14px 32px 0;}
+  .fx-box{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:6px 10px;
+    display:flex; align-items:center; gap:6px;
+    font-size:0.8rem;
+    color:var(--ink);
+  }
+  .fx-box span{opacity:0.7;}
+  .fx-box input{
+    width:66px;
+    background:transparent;
+    border:none;
+    border-bottom:1px solid var(--line);
+    color:var(--ink);
+    font-size:0.82rem;
+    font-family:var(--font-body);
+    padding:2px 2px;
+    text-align:right;
+  }
+  .fx-box input:focus{outline:none; border-color:var(--teal);}
+
+  /* ---------- BOTONES/FILAS estándar del repo ---------- */
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+  button.btn{border:none; border-radius:8px; padding:10px 16px; font-family:inherit; font-weight:bold; font-size:13px; cursor:pointer;}
+  button.btn-ghost{background:transparent; color:var(--ka-primary); border:1px solid var(--ka-primary);}
+  button.btn-danger{background:transparent; color:var(--warn); border:1px solid var(--warn); padding:6px 10px; font-size:12px;}
+  button.btn-small{padding:6px 10px; font-size:12px; border-radius:7px;}
+
+  footer.ka-footer{text-align:center; font-size:11px; color:#8b8578; padding:20px;}
+
+  /* ---------- TABS ---------- */
+  .tabs{
+    display:flex;
+    gap:6px;
+    padding:14px 32px 0;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .tab-btn{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-bottom:none;
+    padding:9px 16px;
+    border-radius:10px 10px 0 0;
+    font-size:0.82rem;
+    font-weight:600;
+    color:var(--muted);
+    cursor:pointer;
+    position:relative;
+    top:1px;
+  }
+  .tab-btn.active{
+    color:var(--teal-dark);
+    background:var(--teal-soft);
+    border-color:var(--line);
+  }
+  .tab-btn.compare-tab{
+    background:var(--peach);
+    color:var(--teal-dark);
+    border-color:var(--peach-dark);
+  }
+  .tab-btn.compare-tab.active{
+    background:var(--peach-dark);
+    color:#fff;
+  }
+  .tab-add{
+    background:none;
+    border:1px dashed var(--muted);
+    color:var(--muted);
+    padding:8px 14px;
+    border-radius:10px;
+    font-size:0.8rem;
+    cursor:pointer;
+    font-weight:600;
+  }
+  .tab-add:hover{border-color:var(--teal); color:var(--teal);}
+
+  main{
+    padding:0 32px 32px;
+  }
+
+  .panel{
+    background:var(--teal-soft);
+    border:1px solid var(--line);
+    border-radius:0 12px 12px 12px;
+    padding:22px;
+    min-height:60vh;
+  }
+
+  /* ---------- TRIP HEADER ---------- */
+  .trip-header{
+    background:var(--surface);
+    border-radius:var(--radius);
+    padding:18px 22px;
+    margin-bottom:18px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:20px;
+    flex-wrap:wrap;
+    box-shadow:0 1px 2px rgba(0,0,0,0.04);
+  }
+  .trip-header-main{flex:1; min-width:260px;}
+  .trip-name-input{
+    font-family:var(--font-display);
+    font-size:1.35rem;
+    font-weight:600;
+    border:none;
+    background:transparent;
+    color:var(--teal-dark);
+    padding:2px 4px;
+    width:100%;
+    border-radius:6px;
+  }
+  .trip-name-input:hover, .trip-name-input:focus{background:var(--teal-soft); outline:none;}
+
+  .trip-dates{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:10px;
+    font-size:0.82rem;
+    color:var(--muted);
+  }
+  .trip-dates input{
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:5px 8px;
+    font-family:var(--font-body);
+    font-size:0.8rem;
+    color:var(--ink);
+  }
+  .route-line{
+    flex:1;
+    min-width:40px;
+    max-width:120px;
+    height:1px;
+    background:repeating-linear-gradient(90deg, var(--peach-dark) 0 6px, transparent 6px 11px);
+    position:relative;
+  }
+  .route-line::after{
+    content:"✈";
+    position:absolute; top:-9px; left:50%; transform:translateX(-50%);
+    font-size:0.8rem; color:var(--peach-dark);
+  }
+
+  .trip-actions{display:flex; gap:8px; align-items:flex-start;}
+  .trip-total-box{
+    text-align:right;
+    background:var(--teal);
+    color:#fff;
+    padding:12px 18px;
+    border-radius:12px;
+    min-width:150px;
+  }
+  .trip-total-box .label{font-size:0.68rem; opacity:0.8; letter-spacing:0.05em; text-transform:uppercase;}
+  .trip-total-box .amount{font-family:var(--font-display); font-size:1.35rem; font-weight:700;}
+
+  .icon-btn{
+    background:var(--surface);
+    border:1px solid var(--line);
+    width:32px; height:32px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:0.85rem;
+    color:var(--muted);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .icon-btn:hover{border-color:var(--teal); color:var(--teal);}
+  .icon-btn.danger:hover{border-color:var(--danger); color:var(--danger);}
+
+  /* ---------- TWO COLUMN LAYOUT ---------- */
+  .cols{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    align-items:start;
+  }
+  @media (max-width:900px){ .cols{grid-template-columns:1fr;} }
+
+  .col-title-row{
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:10px;
+  }
+  .col-title{
+    font-family:var(--font-display);
+    font-size:0.95rem;
+    font-weight:600;
+    color:var(--teal-dark);
+    margin:0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .col-title .count{
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:0.7rem;
+    background:var(--peach);
+    color:var(--teal-dark);
+    padding:2px 8px;
+    border-radius:20px;
+  }
+
+  .currency-toggle{
+    display:flex; border:1px solid var(--teal); border-radius:20px; overflow:hidden; flex-shrink:0;
+  }
+  .ctog-btn{
+    border:none; background:var(--surface); color:var(--teal-dark);
+    padding:5px 12px; font-size:0.76rem; font-weight:700; cursor:pointer;
+  }
+  .ctog-btn.active{background:var(--teal); color:#fff;}
+
+  .card-list{display:flex; flex-direction:column; gap:8px;}
+
+  /* selected item card (left, READ-ONLY) */
+  .sel-item-ro{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:11px;
+    padding:10px 12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:8px;
+  }
+  .sel-cat-tag{
+    font-size:0.65rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    color:var(--teal-dark);
+    background:var(--teal-soft);
+    padding:2px 7px;
+    border-radius:20px;
+    display:inline-block;
+    margin-bottom:5px;
+  }
+  .sel-ro-name{font-weight:600; font-size:0.88rem; margin-bottom:3px;}
+  .sel-ro-row{display:flex; gap:10px; align-items:baseline; flex-wrap:wrap;}
+  .sel-ro-amount{font-variant-numeric:tabular-nums; font-weight:700; color:var(--teal-dark); font-size:0.86rem;}
+  .sel-ro-obs{font-size:0.76rem; color:var(--muted);}
+  .sel-remove{
+    background:none; border:none; color:var(--muted); cursor:pointer;
+    font-size:0.9rem; padding:2px 6px; border-radius:6px; flex-shrink:0;
+  }
+  .sel-remove:hover{color:var(--danger); background:#FBEAE7;}
+
+  .empty-state{
+    text-align:center;
+    padding:36px 16px;
+    color:var(--muted);
+    font-size:0.82rem;
+    background:var(--surface);
+    border:1px dashed var(--line);
+    border-radius:12px;
+  }
+
+  .total-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:var(--teal-dark);
+    color:#fff;
+    padding:12px 16px;
+    border-radius:11px;
+    margin-top:10px;
+    font-family:var(--font-display);
+    font-weight:600;
+  }
+
+  /* ---------- CATALOG (right, EDITABLE) ---------- */
+  .add-item-form{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:11px;
+    padding:12px;
+    margin-bottom:14px;
+  }
+  .add-item-form .row1{display:flex; gap:8px; margin-bottom:8px; align-items:center;}
+  .add-item-form select, .add-item-form input{
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:6px 8px;
+    font-size:0.8rem;
+    font-family:var(--font-body);
+  }
+  .add-item-form .catSelect{flex:1;}
+  .add-item-form .nameInput{flex:1.3;}
+  .add-item-form .row2{display:flex; gap:8px;}
+  .add-item-form .amountInput{width:110px;}
+  .add-item-form .obsInput{flex:1;}
+  .add-item-form .submitRow{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:8px;}
+
+  .btn-primary{
+    background:var(--teal);
+    color:#fff;
+    border:none;
+    padding:8px 14px;
+    border-radius:8px;
+    font-size:0.8rem;
+    font-weight:600;
+    cursor:pointer;
+    font-family:var(--font-body);
+    white-space:nowrap;
+  }
+  .btn-primary:hover{background:var(--teal-dark);}
+  .btn-secondary{
+    background:var(--surface);
+    color:var(--teal-dark);
+    border:1px solid var(--teal);
+    padding:8px 14px;
+    border-radius:8px;
+    font-size:0.8rem;
+    font-weight:600;
+    cursor:pointer;
+    font-family:var(--font-body);
+  }
+  .btn-secondary:hover{background:var(--teal-soft);}
+  .link-btn{
+    background:none; border:none; color:var(--teal-dark);
+    font-size:0.76rem; font-weight:600; cursor:pointer;
+    text-decoration:underline; padding:0; white-space:nowrap;
+  }
+
+  .catalog-cat-group{margin-bottom:16px;}
+  .catalog-cat-heading{
+    font-size:0.72rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--muted);
+    margin:0 0 8px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .cat-item{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:11px;
+    padding:10px 12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:10px;
+    margin-bottom:7px;
+    transition:border-color .15s;
+  }
+  .cat-item.is-added{
+    border-color:var(--teal);
+    background:var(--teal-soft);
+  }
+  .cat-item-editable{flex:1; min-width:0;}
+  .cat-name-input{
+    font-weight:600;
+    font-size:0.85rem;
+    border:none;
+    background:transparent;
+    width:100%;
+    padding:2px 3px;
+    border-radius:5px;
+    color:var(--ink);
+  }
+  .cat-name-input:hover, .cat-name-input:focus{background:var(--bg); outline:none;}
+  .cat-item-row2{display:flex; gap:6px; margin-top:5px;}
+  .cat-amount-input{
+    width:95px;
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:4px 7px;
+    font-size:0.78rem;
+    font-variant-numeric:tabular-nums;
+    text-align:right;
+  }
+  .cat-obs-input{
+    flex:1;
+    min-width:0;
+    border:1px solid var(--line);
+    border-radius:7px;
+    padding:4px 7px;
+    font-size:0.75rem;
+    color:var(--muted);
+  }
+  .cat-item-actions{display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0;}
+  .cat-item-del{
+    background:none; border:none; color:var(--line); cursor:pointer; font-size:0.85rem;
+  }
+  .cat-item-del:hover{color:var(--danger);}
+  .toggle-btn{
+    border:1px solid var(--teal);
+    background:#fff;
+    color:var(--teal-dark);
+    padding:6px 12px;
+    border-radius:20px;
+    font-size:0.72rem;
+    font-weight:700;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .toggle-btn.added{
+    background:var(--teal);
+    color:#fff;
+  }
+
+  /* ---------- COMPARE VIEW ---------- */
+  .compare-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+    gap:16px;
+  }
+  .compare-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px;
+  }
+  .compare-card h3{
+    font-family:var(--font-display);
+    margin:0 0 2px;
+    font-size:1.05rem;
+    color:var(--teal-dark);
+  }
+  .compare-card .dates{font-size:0.75rem; color:var(--muted); margin-bottom:10px;}
+  .compare-card ul{list-style:none; margin:0 0 10px; padding:0;}
+  .compare-card li{
+    display:flex; justify-content:space-between;
+    font-size:0.78rem; padding:4px 0; border-bottom:1px dashed var(--line);
+  }
+  .compare-card li .cname{color:var(--ink);}
+  .compare-card li .camount{font-variant-numeric:tabular-nums; color:var(--muted);}
+  .compare-total{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--teal-soft); border-radius:9px; padding:9px 12px;
+    font-weight:700; color:var(--teal-dark); margin-bottom:8px;
+  }
+  .compare-bar-track{
+    background:var(--bg); border-radius:20px; height:8px; overflow:hidden; margin-top:4px;
+  }
+  .compare-bar-fill{background:var(--peach-dark); height:100%; border-radius:20px;}
+  .compare-empty{color:var(--muted); font-size:0.78rem; text-align:center; padding:30px;}
+
+  /* ---------- CATEGORIES MODAL ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(15,20,20,0.45);
+    display:none; align-items:center; justify-content:center; z-index:50; padding:20px;
+  }
+  .modal-box{
+    background:var(--surface);
+    border-radius:16px;
+    width:100%; max-width:480px;
+    max-height:80vh;
+    display:flex; flex-direction:column;
+    box-shadow:0 12px 40px rgba(0,0,0,0.25);
+  }
+  .modal-header{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:16px 20px; border-bottom:1px solid var(--line);
+  }
+  .modal-header h2{
+    font-family:var(--font-display); font-size:1.1rem; margin:0; color:var(--teal-dark);
+  }
+  .modal-body{padding:14px 20px; overflow-y:auto; flex:1;}
+  .modal-hint{font-size:0.76rem; color:var(--muted); margin:0 0 12px;}
+  .cat-row{
+    display:flex; align-items:center; gap:8px; margin-bottom:8px;
+    background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:7px 9px;
+  }
+  .cat-icon-input{
+    width:40px; text-align:center; border:1px solid var(--line); border-radius:7px; padding:5px; font-size:0.9rem;
+  }
+  .cat-name-input2{
+    flex:1; border:1px solid var(--line); border-radius:7px; padding:6px 8px; font-size:0.82rem; font-family:var(--font-body);
+  }
+  .cat-count{font-size:0.68rem; color:var(--muted); white-space:nowrap;}
+  .modal-add-cat{
+    display:flex; gap:8px; padding:14px 20px; border-top:1px solid var(--line);
+  }
+</style>
+<style>
+#kla-publish-badge-wrap{position:fixed;bottom:14px;right:14px;display:flex;font-size:10.5px;color:var(--ka-dark);opacity:.55;z-index:50;font-family:inherit;pointer-events:none}
+#kla-publish-badge{pointer-events:auto;cursor:default}
+#kla-publish-badge.kla-stale{color:#C6763F;font-weight:700;cursor:pointer;text-decoration:underline}
+@media print{#kla-publish-badge-wrap{display:none!important}}
+</style>
+</head>
+<body>
+
+<header class="ka-hero">
+  <a href="index.html" class="ka-back">&larr; Volver al índice</a>
+  <div class="ka-mark"><span class="dot"></span>KA · Viajes</div>
+  <h1>Cotizador de Viajes</h1>
+  <p>Armá varias opciones por viaje, activá y desactivá rubros del catálogo, y comparé totales entre viajes.</p>
+</header>
+
+<div class="fx-bar">
+  <div class="fx-box" title="Tipo de cambio: cuántos colones equivalen a 1 dólar">
+    <span>₡</span>
+    <input type="number" step="0.01" id="fxRateInput" data-action="fxRate" value="525">
+    <span>= $1</span>
+  </div>
+  <button class="btn btn-ghost btn-small" id="categoriesBtn">⚙ Categorías</button>
+</div>
+
+<div class="tabs" id="tabsBar"></div>
+<main>
+  <div class="panel" id="mainPanel"></div>
+</main>
+
+<footer class="ka-footer">
+  <div class="row" style="justify-content:center; gap:14px;">
+    <button class="btn btn-ghost btn-small" id="exportBtn">Exportar respaldo (JSON)</button>
+    <label class="btn btn-ghost btn-small" style="cursor:pointer;">
+      Importar respaldo
+      <input type="file" id="importFileInput" accept="application/json" style="display:none;">
+    </label>
+    <button class="btn btn-danger" id="btn-reset">Borrar todo</button>
+  </div>
+  <p style="margin-top:10px;">KA · Cotizador de Viajes — los datos se guardan solo en este navegador. Los rubros del catálogo se ingresan en dólares.</p>
+</footer>
+
+<!-- Categories modal -->
+<div class="modal-overlay" id="categoriesModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Gestionar categorías</h2>
+      <button class="icon-btn" id="closeCategoriesModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-hint">Edita el ícono o nombre directamente. Si eliminas una categoría con rubros, esos rubros se reasignan a otra categoría.</p>
+      <div id="categoriesListContainer"></div>
+    </div>
+    <div class="modal-add-cat">
+      <input type="text" id="newCatIcon" placeholder="🏷️" maxlength="4">
+      <input type="text" id="newCatName" placeholder="Nombre de la nueva categoría">
+      <button class="btn-primary" id="addCategoryBtn">+ Agregar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+  "use strict";
+
+  const STORAGE_KEY = "ka_cotizador_viajes_v1";
+
+  // ══ Sync a Supabase (multi-dispositivo) ══
+  // Nunca bloquea ni falla el guardado local: localStorage manda siempre, esto es
+  // fire-and-forget encima. Mismo patrón que el resto de calculadoras de este repo:
+  // el navegador llama a /db-proxy (nunca a Supabase directo ni con llave real).
+  const SUPABASE_URL = window.location.origin + '/db-proxy';
+  const SUPABASE_KEY = 'proxied'; // no es credencial real: el proxy agrega la llave secreta en el servidor.
+  const sb = (typeof supabase!=='undefined') ? supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+  let _syncTimer = null;
+  function syncEstadoSupabase(){
+    if(!sb) return;
+    clearTimeout(_syncTimer);
+    _syncTimer = setTimeout(()=>{
+      sb.from('personal_calculadoras')
+        .upsert({ id: STORAGE_KEY, data: state, updated_at: new Date().toISOString() })
+        .then(({error})=>{ if(error) console.warn('Supabase sync error:', error); });
+    }, 800);
+  }
+  async function pullEstadoSupabase(){
+    if(!sb) return;
+    try{
+      const { data, error } = await sb.from('personal_calculadoras').select('data,updated_at').eq('id', STORAGE_KEY).maybeSingle();
+      if(!error && data && data.data){
+        state = Object.assign(freshState(), data.data);
+        if(!state.activeTripId || !getTrip(state.activeTripId)){
+          state.activeTripId = state.trips[0] ? state.trips[0].id : null;
+        }
+        try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+        render();
+      }
+    }catch(e){ console.warn('Supabase pull error:', e); }
+  }
+
+  // ---------------- STATE ----------------
+  const uid = () => 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,8);
+
+  const DEFAULT_CATEGORIES = [
+    {id:'cat-vehiculo', name:'Alquiler Vehículo', icon:'🚗'},
+    {id:'cat-hospedaje', name:'Hospedaje', icon:'🏨'},
+    {id:'cat-vuelos', name:'Vuelos', icon:'✈️'},
+    {id:'cat-traslados', name:'Traslados', icon:'🚕'},
+    {id:'cat-comidas', name:'Comidas', icon:'🍽️'},
+    {id:'cat-actividades', name:'Actividades / Tours', icon:'🎟️'},
+    {id:'cat-seguro', name:'Seguro de Viaje', icon:'🛡️'},
+    {id:'cat-otros', name:'Otros', icon:'📦'}
+  ];
+
+  function freshState(){
+    const tripId = uid();
+    return {
+      exchangeRate:525,
+      displayCurrency:'USD', // affects only the left column / totals / compare view
+      categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
+      catalog: [], // {id, categoryId, name, amount(USD), obs}
+      trips: [
+        {id:tripId, name:'Viaje 1', start:'', end:'', selections:{}}
+        // selections: { [catalogId]: true }  -> read-only reference into catalog
+      ],
+      activeTripId: tripId,
+      view:'trip'
+    };
+  }
+
+  let state = freshState();
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){ state = Object.assign(freshState(), JSON.parse(raw)); }
+    }catch(e){ console.error("Error cargando datos:", e); }
+    if(!state.activeTripId || !getTrip(state.activeTripId)){
+      state.activeTripId = state.trips[0] ? state.trips[0].id : null;
+    }
+  }
+  function save(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch(e){ console.error("Error guardando datos:", e); }
+    syncEstadoSupabase();
+  }
+
+  // ---------------- HELPERS ----------------
+  function fmtUSD(amount){
+    const n = Number(amount)||0;
+    return '$ ' + n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+  function fmtDisplay(amountUSD){
+    const n = Number(amountUSD)||0;
+    if(state.displayCurrency==='CRC'){
+      const crc = n * (Number(state.exchangeRate)||0);
+      return '₡ ' + crc.toLocaleString('es-CR', {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+    return fmtUSD(n);
+  }
+
+  function getTrip(id){ return state.trips.find(t=>t.id===id); }
+  function getCatalogItem(id){ return state.catalog.find(i=>i.id===id); }
+
+  function getSelectedItems(trip){
+    return Object.keys(trip.selections)
+      .filter(cid => trip.selections[cid])
+      .map(cid => getCatalogItem(cid))
+      .filter(Boolean);
+  }
+  function tripTotalUSD(trip){
+    return getSelectedItems(trip).reduce((s,it)=> s + (Number(it.amount)||0), 0);
+  }
+
+  function catName(catId){
+    const c = state.categories.find(c=>c.id===catId);
+    return c ? c.name : 'Otros';
+  }
+  function catIcon(catId){
+    const c = state.categories.find(c=>c.id===catId);
+    return c && c.icon ? c.icon : '📦';
+  }
+
+  function escapeHtml(str){
+    return String(str==null?'':str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  // ---------------- RENDER: TABS ----------------
+  function renderTabs(){
+    const bar = document.getElementById('tabsBar');
+    let html = '';
+    state.trips.forEach(t=>{
+      const active = (state.view==='trip' && state.activeTripId===t.id) ? ' active' : '';
+      html += `<button class="tab-btn${active}" data-action="selectTrip" data-id="${t.id}">${escapeHtml(t.name||'Viaje')}</button>`;
+    });
+    html += `<button class="tab-add" data-action="addTrip">+ Nuevo viaje</button>`;
+    if(state.trips.length>1){
+      const cmpActive = state.view==='compare' ? ' active' : '';
+      html += `<button class="tab-btn compare-tab${cmpActive}" data-action="showCompare">⇄ Comparar (${state.trips.length})</button>`;
+    }
+    bar.innerHTML = html;
+  }
+
+  // ---------------- RENDER: LEFT COLUMN (read-only) ----------------
+  function renderLeftColumnHTML(trip){
+    const items = getSelectedItems(trip);
+    const total = tripTotalUSD(trip);
+
+    const titleRow = `
+      <div class="col-title-row">
+        <h3 class="col-title">Rubros incluidos <span class="count">${items.length}</span></h3>
+        <div class="currency-toggle">
+          <button class="ctog-btn ${state.displayCurrency==='USD'?'active':''}" data-action="setDisplayCurrency" data-val="USD">$</button>
+          <button class="ctog-btn ${state.displayCurrency==='CRC'?'active':''}" data-action="setDisplayCurrency" data-val="CRC">₡</button>
+        </div>
+      </div>
+    `;
+
+    let list;
+    if(items.length===0){
+      list = `<div class="empty-state">Aún no has incluido rubros.<br>Selecciónalos desde el catálogo de la derecha →</div>`;
+    } else {
+      list = '<div class="card-list">' + items.map(it => `
+        <div class="sel-item-ro">
+          <div style="flex:1; min-width:0;">
+            <span class="sel-cat-tag">${catIcon(it.categoryId)} ${escapeHtml(catName(it.categoryId))}</span>
+            <div class="sel-ro-name">${escapeHtml(it.name)}</div>
+            <div class="sel-ro-row">
+              <span class="sel-ro-amount">${fmtDisplay(it.amount)}</span>
+              ${it.obs ? `<span class="sel-ro-obs">${escapeHtml(it.obs)}</span>` : ''}
+            </div>
+          </div>
+          <button class="sel-remove" data-action="removeSelection" data-trip="${trip.id}" data-cat="${it.id}" title="Quitar">✕</button>
+        </div>
+      `).join('') + '</div>';
+    }
+
+    const totalRow = `<div class="total-row"><span>Total incluido</span><span>${fmtDisplay(total)}</span></div>`;
+
+    return titleRow + list + totalRow;
+  }
+
+  function updateLeftColumn(){
+    const trip = getTrip(state.activeTripId);
+    if(!trip) return;
+    const container = document.getElementById('leftColContainer');
+    if(container) container.innerHTML = renderLeftColumnHTML(trip);
+    const totalBox = document.querySelector('.trip-total-box .amount');
+    if(totalBox) totalBox.textContent = fmtDisplay(tripTotalUSD(trip));
+    const totalLabel = document.querySelector('.trip-total-box .label');
+    if(totalLabel) totalLabel.textContent = `Total (${getSelectedItems(trip).length} rubro${getSelectedItems(trip).length===1?'':'s'})`;
+  }
+
+  // ---------------- RENDER: RIGHT COLUMN (editable catalog) ----------------
+  function renderAddItemForm(){
+    const catOptions = state.categories.map(c=>`<option value="${c.id}">${c.icon} ${escapeHtml(c.name)}</option>`).join('');
+    return `
+      <div class="add-item-form">
+        <div class="row1">
+          <select class="catSelect" id="newItemCat">${catOptions}</select>
+          <input class="nameInput" id="newItemName" type="text" placeholder="Nombre del rubro (ej. Toyota Yaris 4x4)">
+        </div>
+        <div class="row2">
+          <input class="amountInput" id="newItemAmount" type="number" step="0.01" placeholder="Monto en $">
+          <input class="obsInput" id="newItemObs" type="text" placeholder="Observaciones (ej. 7 días, incluye seguro básico)">
+        </div>
+        <div class="submitRow">
+          <button class="link-btn" id="manageCatLink">Gestionar categorías</button>
+          <button class="btn-primary" data-action="submitNewItem">+ Agregar al catálogo</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderCatalogGroups(trip){
+    if(state.catalog.length===0){
+      return `<div class="empty-state">El catálogo está vacío.<br>Agrega tu primer rubro arriba (en dólares).</div>`;
+    }
+    let html = '';
+    state.categories.forEach(cat=>{
+      const items = state.catalog.filter(i=>i.categoryId===cat.id);
+      if(items.length===0) return;
+      html += `<div class="catalog-cat-group">
+        <div class="catalog-cat-heading">${cat.icon} ${escapeHtml(cat.name)}</div>
+        ${items.map(it=>{
+          const added = !!trip.selections[it.id];
+          return `
+            <div class="cat-item ${added?'is-added':''}">
+              <div class="cat-item-editable">
+                <input class="cat-name-input" data-action="editCatalogName" data-id="${it.id}" value="${escapeHtml(it.name)}">
+                <div class="cat-item-row2">
+                  <input type="number" step="0.01" class="cat-amount-input" data-action="editCatalogAmount" data-id="${it.id}" value="${it.amount}">
+                  <input type="text" class="cat-obs-input" placeholder="Observaciones" data-action="editCatalogObs" data-id="${it.id}" value="${escapeHtml(it.obs)}">
+                </div>
+              </div>
+              <div class="cat-item-actions">
+                <button class="cat-item-del" data-action="deleteCatalogItem" data-id="${it.id}" title="Eliminar del catálogo">✕</button>
+                <button class="toggle-btn ${added?'added':''}" data-action="toggleSelection" data-trip="${trip.id}" data-cat="${it.id}">
+                  ${added ? '✓ Agregado' : '+ Agregar'}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>`;
+    });
+    return html;
+  }
+
+  function renderRightColumnHTML(trip){
+    return `
+      <h3 class="col-title" style="margin-bottom:10px;">Catálogo de rubros <span class="count">${state.catalog.length}</span></h3>
+      ${renderAddItemForm()}
+      ${renderCatalogGroups(trip)}
+    `;
+  }
+
+  // ---------------- RENDER: TRIP EDITOR ----------------
+  function renderTripView(){
+    const trip = getTrip(state.activeTripId);
+    const panel = document.getElementById('mainPanel');
+    if(!trip){ panel.innerHTML = '<div class="empty-state">No hay viaje seleccionado.</div>'; return; }
+
+    const total = tripTotalUSD(trip);
+    const selCount = getSelectedItems(trip).length;
+
+    const header = `
+      <div class="trip-header">
+        <div class="trip-header-main">
+          <input class="trip-name-input" data-action="editTripName" data-id="${trip.id}" value="${escapeHtml(trip.name)}" placeholder="Nombre del viaje">
+          <div class="trip-dates">
+            <span>Del</span>
+            <input type="date" data-action="editTripStart" data-id="${trip.id}" value="${trip.start||''}">
+            <div class="route-line"></div>
+            <span>al</span>
+            <input type="date" data-action="editTripEnd" data-id="${trip.id}" value="${trip.end||''}">
+          </div>
+        </div>
+        <div class="trip-actions">
+          <div class="trip-total-box">
+            <div class="label">Total (${selCount} rubro${selCount===1?'':'s'})</div>
+            <div class="amount">${fmtDisplay(total)}</div>
+          </div>
+          <button class="icon-btn" data-action="duplicateTrip" data-id="${trip.id}" title="Duplicar viaje">⧉</button>
+          <button class="icon-btn danger" data-action="removeTrip" data-id="${trip.id}" title="Eliminar viaje">🗑</button>
+        </div>
+      </div>
+    `;
+
+    const cols = `
+      <div class="cols">
+        <div id="leftColContainer">${renderLeftColumnHTML(trip)}</div>
+        <div id="rightColContainer">${renderRightColumnHTML(trip)}</div>
+      </div>
+    `;
+
+    panel.innerHTML = header + cols;
+    document.getElementById('manageCatLink').addEventListener('click', openCategoriesModal);
+  }
+
+  // ---------------- RENDER: COMPARE ----------------
+  function renderCompareView(){
+    const panel = document.getElementById('mainPanel');
+    if(state.trips.length===0){
+      panel.innerHTML = `<div class="compare-empty">No hay viajes para comparar.</div>`;
+      return;
+    }
+    const totals = state.trips.map(t=>tripTotalUSD(t));
+    const maxTotal = Math.max(1, ...totals);
+
+    const cards = state.trips.map((t,idx)=>{
+      const total = totals[idx];
+      const pct = Math.round((total/maxTotal)*100);
+      const dateStr = (t.start||t.end) ? `${t.start||'—'} → ${t.end||'—'}` : 'Fechas sin definir';
+      const items = getSelectedItems(t);
+      const list = items.length ? items.map(it=>`
+        <li><span class="cname">${catIcon(it.categoryId)} ${escapeHtml(it.name)}</span><span class="camount">${fmtDisplay(it.amount)}</span></li>
+      `).join('') : `<li style="justify-content:center; color:var(--muted);">Sin rubros incluidos</li>`;
+
+      return `
+        <div class="compare-card">
+          <h3>${escapeHtml(t.name)}</h3>
+          <div class="dates">${dateStr}</div>
+          <div class="compare-total"><span>Total</span><span>${fmtDisplay(total)}</span></div>
+          <div class="compare-bar-track"><div class="compare-bar-fill" style="width:${pct}%"></div></div>
+          <ul style="margin-top:12px;">${list}</ul>
+        </div>
+      `;
+    }).join('');
+
+    panel.innerHTML = `<div class="compare-grid">${cards}</div>`;
+  }
+
+  // ---------------- MASTER RENDER ----------------
+  function render(){
+    save();
+    document.getElementById('fxRateInput').value = state.exchangeRate;
+    renderTabs();
+    if(state.view==='compare'){
+      renderCompareView();
+    } else {
+      renderTripView();
+    }
+  }
+
+  // ---------------- CATEGORIES MODAL ----------------
+  function renderCategoriesModal(){
+    const container = document.getElementById('categoriesListContainer');
+    container.innerHTML = state.categories.map(c=>{
+      const count = state.catalog.filter(i=>i.categoryId===c.id).length;
+      return `
+        <div class="cat-row">
+          <input class="cat-icon-input" data-action="editCategoryIcon" data-id="${c.id}" value="${escapeHtml(c.icon||'')}" maxlength="4">
+          <input class="cat-name-input2" data-action="editCategoryName" data-id="${c.id}" value="${escapeHtml(c.name)}">
+          <span class="cat-count">${count} rubro${count===1?'':'s'}</span>
+          <button class="icon-btn danger" data-action="deleteCategory" data-id="${c.id}" title="Eliminar categoría">🗑</button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function openCategoriesModal(){
+    renderCategoriesModal();
+    document.getElementById('categoriesModal').style.display = 'flex';
+  }
+  function closeCategoriesModal(){
+    document.getElementById('categoriesModal').style.display = 'none';
+  }
+
+  function addCategoryFromModal(){
+    const iconInput = document.getElementById('newCatIcon');
+    const nameInput = document.getElementById('newCatName');
+    const name = nameInput.value.trim();
+    if(!name){ nameInput.focus(); return; }
+    const icon = iconInput.value.trim() || '🏷️';
+    state.categories.push({id:uid(), name, icon});
+    iconInput.value=''; nameInput.value='';
+    renderCategoriesModal();
+    render();
+  }
+
+  function deleteCategory(id){
+    if(state.categories.length<=1){ alert('Debe existir al menos una categoría.'); return; }
+    const itemsInCat = state.catalog.filter(i=>i.categoryId===id);
+    if(itemsInCat.length>0){
+      if(!confirm(`Esta categoría tiene ${itemsInCat.length} rubro(s) en el catálogo. Si la eliminas, esos rubros se moverán a otra categoría. ¿Continuar?`)) return;
+      const target = state.categories.find(c=>c.id==='cat-otros' && c.id!==id) || state.categories.find(c=>c.id!==id);
+      itemsInCat.forEach(i => i.categoryId = target.id);
+    }
+    state.categories = state.categories.filter(c=>c.id!==id);
+    renderCategoriesModal();
+    render();
+  }
+
+  // ---------------- ACTIONS ----------------
+  function addTrip(){
+    const id = uid();
+    state.trips.push({id, name:`Viaje ${state.trips.length+1}`, start:'', end:'', selections:{}});
+    state.activeTripId = id;
+    state.view='trip';
+    render();
+  }
+
+  function removeTrip(id){
+    if(state.trips.length<=1){ alert('Debe quedar al menos un viaje.'); return; }
+    if(!confirm('¿Eliminar este viaje y sus rubros incluidos?')) return;
+    state.trips = state.trips.filter(t=>t.id!==id);
+    if(state.activeTripId===id) state.activeTripId = state.trips[0].id;
+    if(state.trips.length<=1) state.view='trip';
+    render();
+  }
+
+  function duplicateTrip(id){
+    const t = getTrip(id);
+    if(!t) return;
+    const copy = JSON.parse(JSON.stringify(t));
+    copy.id = uid();
+    copy.name = t.name + ' (copia)';
+    state.trips.push(copy);
+    state.activeTripId = copy.id;
+    state.view='trip';
+    render();
+  }
+
+  function toggleSelection(tripId, catalogId){
+    const trip = getTrip(tripId);
+    const item = getCatalogItem(catalogId);
+    if(!trip || !item) return;
+    if(trip.selections[catalogId]){
+      delete trip.selections[catalogId];
+    } else {
+      trip.selections[catalogId] = true;
+    }
+    render();
+  }
+
+  function removeSelection(tripId, catalogId){
+    const trip = getTrip(tripId);
+    if(!trip) return;
+    delete trip.selections[catalogId];
+    render();
+  }
+
+  function deleteCatalogItem(catalogId){
+    if(!confirm('¿Eliminar este rubro del catálogo? Se quitará también de todos los viajes que lo tengan incluido.')) return;
+    state.catalog = state.catalog.filter(i=>i.id!==catalogId);
+    state.trips.forEach(t => { delete t.selections[catalogId]; });
+    render();
+  }
+
+  function submitNewItem(){
+    const catSel = document.getElementById('newItemCat');
+    const nameInput = document.getElementById('newItemName');
+    const amountInput = document.getElementById('newItemAmount');
+    const obsInput = document.getElementById('newItemObs');
+
+    const categoryId = catSel.value;
+    const name = nameInput.value.trim();
+    if(!name){ nameInput.focus(); return; }
+    const amount = parseFloat(amountInput.value)||0;
+    const obs = obsInput.value.trim();
+
+    state.catalog.push({id:uid(), categoryId, name, amount, obs});
+    render();
+  }
+
+  function exportJSON(){
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const today = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `cotizacion-viajes-${today}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // migrates files exported by the older version of this tool (selections stored as full copies)
+  function migrateLegacyData(data){
+    data.exchangeRate = data.exchangeRate || 525;
+    data.displayCurrency = data.displayCurrency || 'USD';
+    data.catalog = data.catalog || [];
+    (data.trips||[]).forEach(t=>{
+      const sel = t.selections || {};
+      Object.keys(sel).forEach(key=>{
+        const val = sel[key];
+        if(val && typeof val === 'object'){
+          let item = data.catalog.find(i=>i.id===key);
+          if(!item){
+            item = {
+              id:key,
+              categoryId: val.categoryId || (data.categories[0] && data.categories[0].id) || 'cat-otros',
+              name: val.name || 'Rubro',
+              amount: val.amount || 0,
+              obs: val.obs || ''
+            };
+            data.catalog.push(item);
+          }
+          sel[key] = true;
+        }
+      });
+      t.selections = sel;
+    });
+    return data;
+  }
+
+  function importJSON(file){
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try{
+        let data = JSON.parse(e.target.result);
+        if(!data.trips || !Array.isArray(data.trips)) throw new Error('Formato inválido');
+        data = migrateLegacyData(data);
+        state = data;
+        if(!state.activeTripId || !getTrip(state.activeTripId)){
+          state.activeTripId = state.trips[0] ? state.trips[0].id : null;
+        }
+        state.view = 'trip';
+        render();
+      }catch(err){
+        alert('No se pudo leer el archivo. Verifica que sea un JSON exportado desde esta herramienta.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // ---------------- EVENT DELEGATION: CLICK ----------------
+  document.addEventListener('click', (e)=>{
+    const el = e.target.closest('[data-action]');
+    if(!el) return;
+    const action = el.dataset.action;
+    const id = el.dataset.id;
+    const tripId = el.dataset.trip;
+    const catId = el.dataset.cat;
+
+    switch(action){
+      case 'selectTrip': state.activeTripId = id; state.view='trip'; render(); break;
+      case 'addTrip': addTrip(); break;
+      case 'showCompare': state.view='compare'; render(); break;
+      case 'removeTrip': removeTrip(id); break;
+      case 'duplicateTrip': duplicateTrip(id); break;
+      case 'toggleSelection': toggleSelection(tripId, catId); break;
+      case 'removeSelection': removeSelection(tripId, catId); break;
+      case 'deleteCatalogItem': deleteCatalogItem(id); break;
+      case 'submitNewItem': submitNewItem(); break;
+      case 'setDisplayCurrency': state.displayCurrency = el.dataset.val; render(); break;
+      case 'deleteCategory': deleteCategory(id); break;
+    }
+  });
+
+  // ---------------- EVENT DELEGATION: INPUT ----------------
+  document.addEventListener('input', (e)=>{
+    const el = e.target.closest('[data-action]');
+    if(!el) return;
+    const action = el.dataset.action;
+    const tripId = el.dataset.trip || el.dataset.id;
+    const dataId = el.dataset.id;
+
+    switch(action){
+      case 'editTripName': { const t=getTrip(tripId); if(t){ t.name=el.value; renderTabs(); save(); } break; }
+      case 'editTripStart': { const t=getTrip(tripId); if(t){ t.start=el.value; save(); } break; }
+      case 'editTripEnd': { const t=getTrip(tripId); if(t){ t.end=el.value; save(); } break; }
+      case 'editCatalogName': { const it=getCatalogItem(dataId); if(it){ it.name=el.value; updateLeftColumn(); save(); } break; }
+      case 'editCatalogAmount': { const it=getCatalogItem(dataId); if(it){ it.amount=parseFloat(el.value)||0; updateLeftColumn(); save(); } break; }
+      case 'editCatalogObs': { const it=getCatalogItem(dataId); if(it){ it.obs=el.value; updateLeftColumn(); save(); } break; }
+      case 'fxRate': { state.exchangeRate=parseFloat(el.value)||0; updateLeftColumn(); save(); break; }
+      case 'editCategoryIcon': { const c=state.categories.find(c=>c.id===dataId); if(c){ c.icon=el.value; render(); } break; }
+      case 'editCategoryName': { const c=state.categories.find(c=>c.id===dataId); if(c){ c.name=el.value; render(); } break; }
+    }
+  });
+
+  // ---------------- RESET ----------------
+  function resetAll(){
+    if(!confirm('Esto borra todos los datos guardados en este navegador. ¿Continuar?')) return;
+    state = freshState();
+    render();
+  }
+
+  // ---------------- STATIC UI WIRING ----------------
+  document.getElementById('exportBtn').addEventListener('click', exportJSON);
+  document.getElementById('importFileInput').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(file) importJSON(file);
+    e.target.value = '';
+  });
+  document.getElementById('btn-reset').addEventListener('click', resetAll);
+  document.getElementById('categoriesBtn').addEventListener('click', openCategoriesModal);
+  document.getElementById('closeCategoriesModal').addEventListener('click', closeCategoriesModal);
+  document.getElementById('categoriesModal').addEventListener('click', (e)=>{
+    if(e.target.id==='categoriesModal') closeCategoriesModal();
+  });
+  document.getElementById('addCategoryBtn').addEventListener('click', addCategoryFromModal);
+
+  // ---------------- INIT ----------------
+  load();
+  render();
+  pullEstadoSupabase();
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch((err) => console.warn('SW no registrado:', err));
+  });
+}
+</script>
+
+
+<div id="kla-publish-badge-wrap">
+  <span id="kla-publish-badge" title="Última publicación de esta página"></span>
+</div>
+<script>
+(function(){
+  var META_NAME='kla-published';
+  var el=document.getElementById('kla-publish-badge');
+  var metaEl=document.querySelector('meta[name="'+META_NAME+'"]');
+  var localIso=metaEl?metaEl.getAttribute('content'):null;
+
+  function fmt(iso){
+    if(!iso) return null;
+    var d=new Date(iso);
+    if(isNaN(d.getTime())) return null;
+    var meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    var h=d.getHours(), m=d.getMinutes();
+    var ampm=h>=12?'p.m.':'a.m.';
+    var h12=h%12; if(h12===0) h12=12;
+    var mm=(m<10?'0':'')+m;
+    return d.getDate()+' '+meses[d.getMonth()]+' '+d.getFullYear()+', '+h12+':'+mm+' '+ampm;
+  }
+
+  function setNormal(){
+    if(!el) return;
+    el.textContent=localIso?('Publicado: '+fmt(localIso)):'Publicado: —';
+    el.classList.remove('kla-stale');
+    el.onclick=null;
+  }
+
+  function setStale(){
+    if(!el) return;
+    el.textContent='Hay una versión más nueva — recargá';
+    el.classList.add('kla-stale');
+    el.onclick=function(){ location.reload(); };
+  }
+
+  var checking=false;
+  function check(){
+    if(checking||!localIso||!el||el.classList.contains('kla-stale')) return;
+    checking=true;
+    fetch(location.pathname+'?_kla='+Date.now(),{cache:'no-store'})
+      .then(function(r){return r.text();})
+      .then(function(html){
+        var m=html.match(new RegExp('<meta[^>]+name=["\']'+META_NAME+'["\'][^>]+content=["\']([^"\']+)["\']'));
+        if(m&&m[1]){
+          var remote=new Date(m[1]), local=new Date(localIso);
+          if(!isNaN(remote.getTime())&&!isNaN(local.getTime())&&remote.getTime()>local.getTime()){
+            setStale();
+          }
+        }
+      })
+      .catch(function(){})
+      .finally(function(){checking=false;});
+  }
+
+  setNormal();
+  setInterval(check,120000);
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden) check(); });
+  window.addEventListener('focus',check);
+})();
+</script>
+</body>
+</html>
