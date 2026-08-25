@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es-CR">
 <head>
+<meta name="kla-published" content="2026-08-25T16:53:35-06:00">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KA · Viajes LeNu Travels</title>
@@ -42,6 +43,13 @@
   .tool-card p{font-size:0.85rem; color:var(--muted); margin:0; line-height:1.4;}
 
   footer{text-align:center; font-size:11px; color:var(--muted); padding:20px;}
+
+  #kla-publish-badge-wrap{position:fixed;bottom:14px;right:14px;display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--ka-dark);opacity:.55;z-index:50;font-family:inherit;pointer-events:none;text-align:right}
+  #kla-publish-badge-wrap svg{height:14px;width:auto;display:block;flex-shrink:0}
+  #kla-publish-badge-wrap .kla-lines{display:flex;flex-direction:column;line-height:1.35}
+  #kla-publish-badge{pointer-events:auto;cursor:default}
+  #kla-publish-badge.kla-stale{color:#C6763F;font-weight:700;cursor:pointer;text-decoration:underline}
+  @media print{#kla-publish-badge-wrap{display:none!important}}
 </style>
 </head>
 <body>
@@ -68,6 +76,72 @@
 </main>
 
 <footer>KA · Viajes LeNu Travels — herramientas de uso personal.</footer>
+
+<div id="kla-publish-badge-wrap">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1179 945" fill="currentColor"><g transform="translate(0,945) scale(0.1,-0.1)" stroke="none"><path d="M5976 8698 c-32 -49 -47 -103 -57 -206 -30 -321 -121 -688 -283 -1142 -18 -52 -47 -133 -64 -180 -16 -47 -33 -92 -36 -101 -6 -13 -28 -17 -114 -21 -88 -5 -121 -11 -187 -37 -152 -59 -320 -179 -418 -299 -63 -77 -85 -117 -103 -187 -33 -123 -7 -207 73 -235 58 -20 193 -2 337 45 59 19 110 35 112 35 7 0 -18 -55 -115 -249 -348 -694 -583 -1020 -1375 -1901 -161 -180 -310 -302 -421 -347 -61 -25 -82 -39 -74 -47 7 -7 253 86 327 123 219 111 496 334 709 572 317 355 531 661 821 1174 34 61 214 423 241 485 13 30 46 107 73 171 l50 117 71 32 c40 18 121 57 181 87 59 30 115 53 124 51 8 -2 46 -57 83 -123 175 -310 289 -438 476 -534 l42 -21 -48 -77 c-121 -195 -161 -258 -262 -408 -245 -366 -377 -547 -584 -800 -699 -859 -1665 -1684 -2405 -2056 -167 -84 -246 -114 -344 -129 -266 -43 -424 72 -521 380 -45 143 -45 143 -40 25 16 -318 100 -532 244 -624 133 -85 343 -78 595 22 100 39 371 175 456 229 472 297 888 635 1350 1098 601 601 1146 1306 1617 2088 91 151 120 191 132 186 38 -17 192 -43 314 -54 282 -25 613 20 816 112 294 132 579 465 691 808 38 116 67 230 76 297 7 60 7 60 154 88 47 9 117 25 155 35 39 10 120 28 180 40 61 12 133 28 160 35 64 18 261 45 325 45 28 0 50 4 50 8 0 15 -235 27 -520 27 -224 -1 -291 -4 -363 -19 -48 -10 -92 -16 -98 -14 -8 3 -11 40 -10 114 3 195 -31 478 -80 650 -54 195 -115 298 -208 352 -41 24 -56 27 -136 27 -128 0 -175 -25 -326 -175 -196 -195 -344 -431 -728 -1162 -40 -76 -79 -138 -86 -138 -27 0 -309 -92 -423 -138 -192 -79 -269 -141 -286 -230 -8 -47 15 -51 88 -15 85 43 185 82 286 111 47 13 116 33 153 44 38 11 71 18 73 15 3 -3 -7 -27 -22 -53 -58 -104 -309 -546 -332 -584 -8 -13 -17 -10 -63 14 -123 67 -271 199 -332 298 -59 96 -157 271 -157 281 0 7 32 29 70 50 115 61 367 215 492 298 263 176 463 367 590 561 93 141 127 204 214 393 38 83 88 178 111 213 46 66 50 81 31 100 -40 40 -83 -11 -195 -233 -164 -325 -283 -489 -492 -678 -179 -162 -513 -383 -817 -539 l-82 -42 -68 63 c-38 35 -88 74 -111 88 -24 14 -43 26 -43 28 0 2 17 52 39 112 21 59 62 185 90 278 29 94 61 197 71 230 31 98 79 320 102 470 15 103 21 190 22 325 1 128 5 192 14 207 17 30 15 70 -4 77 -25 10 -33 7 -48 -16z m2253 -438 c106 -54 191 -228 236 -485 22 -126 37 -341 30 -421 l-7 -70 -87 -18 c-47 -10 -147 -31 -221 -46 -441 -92 -925 -188 -929 -185 -2 2 20 48 49 102 309 577 483 850 638 1001 138 134 209 164 291 122z m231 -1187 c0 -65 -86 -290 -158 -413 -278 -473 -683 -689 -1252 -667 -128 5 -320 33 -336 50 -6 5 13 40 91 172 36 60 152 272 291 532 21 40 45 75 54 78 21 6 329 71 480 100 117 23 231 47 625 129 191 40 205 42 205 19z m-3001 -195 c0 -7 -28 -78 -63 -157 l-62 -144 -54 -20 c-226 -79 -438 -125 -454 -98 -12 18 44 100 117 172 113 112 267 204 401 239 85 22 116 24 115 8z m237 -61 c45 -31 69 -67 45 -67 -5 0 -44 -16 -85 -35 -86 -40 -101 -42 -92 -17 35 93 63 152 72 152 7 0 34 -15 60 -33z"/></g></svg>
+  <div class="kla-lines">
+    <span>Desarrollado por Kenneth Leal Alfaro</span>
+    <span id="kla-publish-badge" title="Última publicación de esta página"></span>
+  </div>
+</div>
+<script>
+(function(){
+  var META_NAME='kla-published';
+  var el=document.getElementById('kla-publish-badge');
+  var metaEl=document.querySelector('meta[name="'+META_NAME+'"]');
+  var localIso=metaEl?metaEl.getAttribute('content'):null;
+
+  function fmt(iso){
+    if(!iso) return null;
+    var d=new Date(iso);
+    if(isNaN(d.getTime())) return null;
+    var meses=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    var h=d.getHours(), m=d.getMinutes();
+    var ampm=h>=12?'p.m.':'a.m.';
+    var h12=h%12; if(h12===0) h12=12;
+    var mm=(m<10?'0':'')+m;
+    return d.getDate()+' '+meses[d.getMonth()]+' '+d.getFullYear()+', '+h12+':'+mm+' '+ampm;
+  }
+
+  function setNormal(){
+    if(!el) return;
+    el.textContent=localIso?('Publicado: '+fmt(localIso)):'Publicado: —';
+    el.classList.remove('kla-stale');
+    el.onclick=null;
+  }
+
+  function setStale(){
+    if(!el) return;
+    el.textContent='Hay una versión más nueva — recargá';
+    el.classList.add('kla-stale');
+    el.onclick=function(){ location.reload(); };
+  }
+
+  var checking=false;
+  function check(){
+    if(checking||!localIso||!el||el.classList.contains('kla-stale')) return;
+    checking=true;
+    fetch(location.pathname+'?_kla='+Date.now(),{cache:'no-store'})
+      .then(function(r){return r.text();})
+      .then(function(html){
+        var m=html.match(new RegExp('<meta[^>]+name=["\']'+META_NAME+'["\'][^>]+content=["\']([^"\']+)["\']'));
+        if(m&&m[1]){
+          var remote=new Date(m[1]), local=new Date(localIso);
+          if(!isNaN(remote.getTime())&&!isNaN(local.getTime())&&remote.getTime()>local.getTime()){
+            setStale();
+          }
+        }
+      })
+      .catch(function(){})
+      .finally(function(){checking=false;});
+  }
+
+  setNormal();
+  setInterval(check,120000);
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden) check(); });
+  window.addEventListener('focus',check);
+})();
+</script>
 
 </body>
 </html>
