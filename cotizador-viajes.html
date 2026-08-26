@@ -652,6 +652,14 @@
         }
         try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
         render();
+      } else if(!error && (!data || !data.data)){
+        // No hay nada en la nube todavía: si ya hay datos locales (por ejemplo,
+        // porque esta calculadora se usó antes de tener sincronización), los
+        // subimos ahora mismo como primer respaldo, sin esperar a que el usuario
+        // edite algo. Así no quedan atrapados solo en este navegador.
+        sb.from('personal_calculadoras')
+          .upsert({ id: STORAGE_KEY, data: state, updated_at: new Date().toISOString() })
+          .then(({error})=>{ if(error) console.warn('Supabase primer respaldo error:', error); });
       }
     }catch(e){ console.warn('Supabase pull error:', e); }
   }
