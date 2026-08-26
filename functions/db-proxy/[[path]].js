@@ -37,10 +37,20 @@ export const onRequest = async (context) => {
   const url = new URL(request.url);
   const targetUrl = `${SUPABASE_URL}/${path}${url.search}`;
 
-  const headers = new Headers(request.headers);
+  // OJO: no reenviamos los headers del navegador tal cual (Origin, Referer,
+  // Sec-Fetch-*, User-Agent). Supabase detecta esos headers como huella de
+  // "esto viene de un browser" y bloquea la llave service_role con 401
+  // ("Forbidden use of secret API key in browser"), aunque la llave nunca
+  // haya salido del servidor. Se arma un set de headers limpio, servidor-a-
+  // servidor, copiando solo lo que PostgREST necesita del pedido original.
+  const headers = new Headers();
   headers.set('apikey', SERVICE_KEY);
   headers.set('authorization', `Bearer ${SERVICE_KEY}`);
-  headers.delete('host');
+  const passthroughHeaders = ['content-type', 'accept', 'prefer', 'range', 'range-unit'];
+  for (const name of passthroughHeaders) {
+    const value = request.headers.get(name);
+    if (value) headers.set(name, value);
+  }
 
   const init = {
     method: request.method,
