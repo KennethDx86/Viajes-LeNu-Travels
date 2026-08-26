@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es-CR">
 <head>
-<meta name="kla-published" content="2026-08-25T16:53:35-06:00">
+<meta name="kla-published" content="2026-08-25T18:15:17-06:00">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KA · Comparador de Cotizaciones</title>
@@ -180,18 +180,26 @@
   .compare-bar-fill{background:var(--peach-dark); height:100%; border-radius:20px;}
   .compare-empty{color:var(--muted); font-size:0.78rem; text-align:center; padding:30px;}
 
-  /* ---------- TYPES MODAL ---------- */
-  .modal-overlay{position:fixed; inset:0; background:rgba(15,20,20,0.45); display:none; align-items:center; justify-content:center; z-index:50; padding:20px;}
-  .modal-box{background:var(--surface); border-radius:16px; width:100%; max-width:480px; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 12px 40px rgba(0,0,0,0.25);}
-  .modal-header{display:flex; justify-content:space-between; align-items:center; padding:16px 20px; border-bottom:1px solid var(--line);}
-  .modal-header h2{font-family:var(--font-display); font-size:1.1rem; margin:0; color:var(--teal-dark);}
-  .modal-body{padding:14px 20px; overflow-y:auto; flex:1;}
-  .modal-hint{font-size:0.76rem; color:var(--muted); margin:0 0 12px;}
-  .cat-row{display:flex; align-items:center; gap:8px; margin-bottom:8px; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:7px 9px;}
-  .cat-icon-input{width:40px; text-align:center; border:1px solid var(--line); border-radius:7px; padding:5px; font-size:0.9rem;}
-  .cat-name-input2{flex:1; border:1px solid var(--line); border-radius:7px; padding:6px 8px; font-size:0.82rem; font-family:var(--font-body);}
-  .cat-count{font-size:0.68rem; color:var(--muted); white-space:nowrap;}
-  .modal-add-cat{display:flex; gap:8px; padding:14px 20px; border-top:1px solid var(--line);}
+  .qc-breadcrumb{font-size:0.72rem; color:var(--muted); margin:-2px 0 4px;}
+  .visitas-box{display:flex; flex-wrap:wrap; gap:6px 14px; border:1px dashed var(--line); border-radius:10px; padding:10px; background:var(--bg);}
+  .visita-check{display:flex; align-items:center; gap:5px; font-size:0.78rem; color:var(--ink); cursor:pointer; font-weight:normal;}
+
+  /* ---------- BASE DE DATOS ---------- */
+  .db-tipos-list{display:flex; flex-direction:column; gap:8px; margin-bottom:6px;}
+  .db-tipo-card{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 12px;}
+  .db-tipo-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .db-expand-btn{background:none; border:none; cursor:pointer; font-size:0.8rem; color:var(--muted); width:18px; flex-shrink:0;}
+  .db-tipo-icon{font-size:1rem;}
+  .db-tipo-name{font-weight:700; color:var(--ink); flex:1;}
+  .db-node-actions{display:flex; gap:10px; align-items:center;}
+  .db-tree-wrap{margin-top:10px; padding-left:26px; border-left:2px solid var(--line);}
+  .db-tree{list-style:none; margin:8px 0 0; padding:0;}
+  .db-tree .db-tree{margin-left:18px; border-left:1px dashed var(--line); padding-left:12px;}
+  .db-node-row{display:flex; align-items:center; gap:10px; padding:4px 0; font-size:0.82rem; flex-wrap:wrap;}
+  .db-node-name{flex:1; color:var(--ink); min-width:120px;}
+  .db-empty-hint{font-size:0.74rem; color:var(--muted); padding:4px 0;}
+  .db-visitas-list{display:flex; flex-direction:column; gap:4px;}
+  .db-visita-row{display:flex; justify-content:space-between; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:6px 10px; font-size:0.82rem;}
 </style>
 <style>
 #kla-publish-badge-wrap{position:fixed;bottom:14px;right:14px;display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--ka-dark);opacity:.55;z-index:50;font-family:inherit;pointer-events:none;text-align:right}
@@ -217,7 +225,6 @@
     <input type="number" step="0.01" id="fxRateInput" data-action="fxRate" value="525">
     <span>= $1</span>
   </div>
-  <button class="btn btn-ghost btn-small" id="typesBtn">⚙ Tipos</button>
 </div>
 
 <div class="tabs" id="sectionTabsBar"></div>
@@ -237,25 +244,6 @@
   </div>
   <p style="margin-top:10px;">KA · Comparador de Cotizaciones — los datos se guardan solo en este navegador. Los precios se ingresan en dólares.</p>
 </footer>
-
-<!-- Types modal -->
-<div class="modal-overlay" id="typesModal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h2>Gestionar tipos</h2>
-      <button class="icon-btn" id="closeTypesModal">✕</button>
-    </div>
-    <div class="modal-body">
-      <p class="modal-hint">Edita el ícono o nombre directamente. Si eliminas un tipo con cotizaciones, esas cotizaciones se reasignan a otro tipo.</p>
-      <div id="typesListContainer"></div>
-    </div>
-    <div class="modal-add-cat">
-      <input type="text" id="newTypeIcon" placeholder="🏷️" maxlength="4">
-      <input type="text" id="newTypeName" placeholder="Nombre del nuevo tipo">
-      <button class="btn-primary" id="addTypeBtn">+ Agregar</button>
-    </div>
-  </div>
-</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -300,13 +288,61 @@
 
   const uid = () => 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2,8);
 
-  const DEFAULT_TYPES = [
-    {id:'tipo-crucero', name:'Crucero', icon:'🚢'},
-    {id:'tipo-hospedaje', name:'Hospedaje', icon:'🏨'},
-    {id:'tipo-auto', name:'Alquiler de Auto', icon:'🚗'},
-    {id:'tipo-parque', name:'Parque / Entradas', icon:'🎟️'},
-    {id:'tipo-vuelo', name:'Vuelos', icon:'✈️'},
-    {id:'tipo-otro', name:'Otros', icon:'📦'}
+  // Catálogo Tipo → Proveedor → Clase → Específico. Un nodo hoja es `null`;
+  // un nodo con hijos es un objeto {nombre: nodo}. Los tipos llevan además su ícono.
+  const CATALOG_DEFAULT = {
+    'Alquiler Vehículo': {icon:'🚗', children:{
+      'Hertz': null,
+      'Alone': null
+    }},
+    'Crucero': {icon:'🚢', children:{
+      'Disney Cruise Line': {
+        'Disney Magic':null,'Disney Wonder':null,'Disney Dream':null,'Disney Fantasy':null,
+        'Disney Wish':null,'Disney Treasure':null,'Disney Destiny':null,'Disney Adventure':null,'Disney Believe':null
+      },
+      'Royal Caribbean': null
+    }},
+    'Hospedaje': {icon:'🏨', children:{
+      'Disney': {
+        'Villas de Lujo': {
+          'Contemporary Resort':null,'Wilderness Lodge':null,'Animal Kingdom':null,'Beach Club':null,'BoardWalk':null,
+          'Old Key West Resor':null,'Polynesian':null,'Saratoga Spring':null,'Rivera Resort':null,'Fort Wilderness':null,'Grand Floridian Resort':null
+        },
+        'Hoteles de Lujo': {
+          'Animal Kingdom Lodge':null,'Beach Club Resort':null,'BoardWalk Inn':null,'Contemporary Resort':null,
+          'Grand Floridian Resort':null,'Polynesian':null,'Wilderness Lodge':null,'Yacht Club Resort':null
+        },
+        'Hoteles Moderados': {
+          'Caribbean Beach Resort':null,'Coronado Spring Resort':null,'Port Orleans Resort French Quarter':null,'Port Orleans Resort Riverside':null
+        },
+        'Hoteles Económicos': {
+          'All-Star Movies':null,'All-Star Music':null,'All-Star Sports':null,'Art of Animation':null,'Pop Century':null
+        },
+        'Sitios para Acampar': { 'Wilderness Resort':null },
+        'Otros Hoteles de Lujo': { 'Dolphin Hotel':null,'Swan Hotel':null,'Swan Reserve':null }
+      },
+      'Universal': {
+        'Premium': { 'Loews Portofino Bay':null,'Hard Rock':null,'Loews Royal Pacific':null,'Loews Sapphire Falls':null,'Helios Grand Hotel':null },
+        'Económica Plus': { 'Aventura':null,'Stella Nova':null,'Terra Luna':null },
+        'Económica': { 'Cabana Bay Beach':null,'Endless Summer Dockside Inn':null,'Endless Summer Surfside Inn':null }
+      },
+      'Airbnb': null
+    }},
+    'Parque': {icon:'🎟️', children:{
+      'Disney': { 'Magic Kingdom':null,'Animal kingdom':null,'Epcot':null,'Typhoon Lagoon':null,'Blizzard Beach':null,'Hollywood Studios':null },
+      'Universal': { 'Universal Studios':null,'Islands of Adventure':null,'Volcano Bay':null,'Epic Universe':null },
+      'SeaWorld': null
+    }},
+    'Vuelo': {icon:'✈️', children:{
+      'Copa': null, 'Avianca': null, 'JetBlue': null
+    }}
+  };
+
+  const VISITAS_CRUCERO_DEFAULT = [
+    'Nassau, Bahamas','Disney Castaway Cay','Disney Lookout Cay at Lighthouse Point','Ensenada, Mexico',
+    'Catalina Island, California','Langkawi, Malaysia','Progreso, Mexico','Vancouver (British Columbia), Canada',
+    'San Diego, California','Port Canaveral, Florida','San Juan, Puerto Rico','La Coruña, Spain',
+    "King's Wharf, Bermuda",'Zeebrugge (Brussels), Belgium','Rotterdam (Amsterdam), Netherlands','Bilbao, Spain'
   ];
 
   function freshState(){
@@ -314,13 +350,14 @@
     return {
       exchangeRate:525,
       displayCurrency:'USD',
-      types: JSON.parse(JSON.stringify(DEFAULT_TYPES)),
-      quotes: [], // {id, typeId, provider, name, start, end, price(USD), status, details:[{label,value}]}
+      catalog: JSON.parse(JSON.stringify(CATALOG_DEFAULT)),
+      visitasCrucero: VISITAS_CRUCERO_DEFAULT.slice(),
+      quotes: [], // {id, tipo, proveedor, clase, especifico, visitas:[], name, start, end, price(USD), status, details:[{label,value}]}
       trips: [
         {id:tripId, name:'Viaje 1', start:'', end:'', selections:{}} // selections: { [quoteId]: true }
       ],
       activeTripId: tripId,
-      section:'quotes' // 'quotes' | 'trip' | 'compare'
+      section:'quotes' // 'quotes' | 'trip' | 'compare' | 'database'
     };
   }
 
@@ -329,6 +366,7 @@
   let catalogFilterType = 'all'; // transient, shared between Cotizaciones tab and Viaje catalog
   let sortMode = 'price_asc';    // transient
   let cheapestSet = new Set();   // recomputed each render
+  let dbExpandedTipo = null;     // transient, tipo expandido en la pestaña Base de Datos
 
   function load(){
     try{
@@ -338,7 +376,7 @@
     if(!state.activeTripId || !getTrip(state.activeTripId)){
       state.activeTripId = state.trips[0] ? state.trips[0].id : null;
     }
-    if(state.section!=='quotes' && state.section!=='compare') state.section='trip';
+    if(state.section!=='quotes' && state.section!=='compare' && state.section!=='database') state.section='trip';
   }
   function save(){
     try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
@@ -383,7 +421,61 @@
 
   function getTrip(id){ return state.trips.find(t=>t.id===id); }
   function getQuote(id){ return state.quotes.find(q=>q.id===id); }
-  function getType(id){ return state.types.find(t=>t.id===id) || {name:'Otros', icon:'📦'}; }
+
+  // ---------------- CATALOG HELPERS ----------------
+  function catalogTipos(){ return Object.keys(state.catalog); }
+  function tipoIcon(tipo){ return (state.catalog[tipo] && state.catalog[tipo].icon) || '📦'; }
+  function proveedoresOf(tipo){
+    const t = state.catalog[tipo];
+    return (t && t.children) ? Object.keys(t.children) : [];
+  }
+  function getProveedorNode(tipo, prov){
+    const t = state.catalog[tipo];
+    return (t && t.children) ? t.children[prov] : undefined;
+  }
+  function clasesOf(tipo, prov){
+    const n = getProveedorNode(tipo, prov);
+    return (n && typeof n==='object') ? Object.keys(n) : [];
+  }
+  function getClaseNode(tipo, prov, clase){
+    const n = getProveedorNode(tipo, prov);
+    return (n && typeof n==='object') ? n[clase] : undefined;
+  }
+  function especificosOf(tipo, prov, clase){
+    const n = getClaseNode(tipo, prov, clase);
+    return (n && typeof n==='object') ? Object.keys(n) : [];
+  }
+  // Devuelve el mapa hijo (creándolo si hace falta) de un nodo, dado un path [tipo, ...niveles].
+  function getOrCreateChildrenMap(path){
+    const tipo = path[0];
+    const tipoNode = state.catalog[tipo];
+    if(!tipoNode) return null;
+    if(path.length===1){
+      if(!tipoNode.children) tipoNode.children = {};
+      return tipoNode.children;
+    }
+    let map = tipoNode.children;
+    for(let i=1;i<path.length;i++){
+      const key = path[i];
+      if(map[key]==null || typeof map[key]!=='object'){ map[key] = {}; }
+      if(i===path.length-1) return map[key];
+      map = map[key];
+    }
+    return null;
+  }
+  // Devuelve el mapa que CONTIENE al nodo señalado por path (para renombrar/eliminar ese nodo).
+  function getParentMap(path){
+    const tipo = path[0];
+    const tipoNode = state.catalog[tipo];
+    if(!tipoNode) return null;
+    if(path.length===2) return tipoNode.children;
+    let map = tipoNode.children;
+    for(let i=1;i<path.length-1;i++){
+      map = map[path[i]];
+      if(!map || typeof map!=='object') return null;
+    }
+    return map;
+  }
 
   function getSelectedQuotes(trip){
     return Object.keys(trip.selections)
@@ -395,23 +487,33 @@
     return getSelectedQuotes(trip).reduce((s,q)=> s + (Number(q.price)||0), 0);
   }
   function filteredQuotes(){
-    return state.quotes.filter(q => catalogFilterType==='all' || q.typeId===catalogFilterType);
+    return state.quotes.filter(q => catalogFilterType==='all' || q.tipo===catalogFilterType);
   }
   function sortQuotes(list){
     const arr = list.slice();
     if(sortMode==='price_asc') arr.sort((a,b)=>(Number(a.price)||0)-(Number(b.price)||0));
     else if(sortMode==='price_desc') arr.sort((a,b)=>(Number(b.price)||0)-(Number(a.price)||0));
     else if(sortMode==='date') arr.sort((a,b)=>(a.start||'9999').localeCompare(b.start||'9999'));
-    else if(sortMode==='provider') arr.sort((a,b)=>(a.provider||'').localeCompare(b.provider||''));
+    else if(sortMode==='provider') arr.sort((a,b)=>(a.proveedor||'').localeCompare(b.proveedor||''));
     return arr;
   }
   function computeCheapestSet(){
     const map = {};
     state.quotes.forEach(q=>{
       if(!q.price) return;
-      if(!map[q.typeId] || q.price < map[q.typeId].price){ map[q.typeId] = {id:q.id, price:q.price}; }
+      if(!map[q.tipo] || q.price < map[q.tipo].price){ map[q.tipo] = {id:q.id, price:q.price}; }
     });
     cheapestSet = new Set(Object.values(map).map(v=>v.id));
+  }
+
+  // ---------------- MONEY INPUT (miles en vivo) ----------------
+  function formatMoneyLive(raw){
+    const digits = String(raw==null?'':raw).replace(/[^\d]/g,'');
+    if(!digits) return '';
+    return Number(digits).toLocaleString('en-US');
+  }
+  function parseMoneyInput(raw){
+    return parseFloat(String(raw==null?'':raw).replace(/,/g,'')) || 0;
   }
 
   // ---------------- QUOTE FORM (shared by add + edit) ----------------
@@ -419,20 +521,27 @@
     return `<div class="detalle-row"><input type="text" class="f-label" placeholder="Etiqueta (ej. Barco)" value="${escapeHtml(label)}"><input type="text" class="f-value" placeholder="Valor (ej. Disney Dream)" value="${escapeHtml(value)}"><button type="button" class="del-detalle" data-action="removeDetalleRow" title="Quitar">✕</button></div>`;
   }
   function quoteFormFieldsHTML(q){
-    q = q || {typeId:(state.types[0]?state.types[0].id:''), provider:'', name:'', status:'cotizado', start:'', end:'', price:'', details:[]};
-    const typeOptions = state.types.map(t=>`<option value="${t.id}" ${t.id===q.typeId?'selected':''}>${t.icon} ${escapeHtml(t.name)}</option>`).join('');
+    q = q || {tipo:(catalogTipos()[0]||''), proveedor:'', clase:'', especifico:'', visitas:[], name:'', status:'cotizado', start:'', end:'', price:'', details:[]};
+    const tipoOptions = catalogTipos().map(t=>`<option value="${escapeHtml(t)}" ${t===q.tipo?'selected':''}>${tipoIcon(t)} ${escapeHtml(t)}</option>`).join('');
     const rows = (q.details && q.details.length ? q.details : [{label:'',value:''}]).map(d=>detalleRowHTML(d.label,d.value)).join('');
+    const visitasHTML = state.visitasCrucero.map(v=>`<label class="visita-check"><input type="checkbox" class="f-visita" value="${escapeHtml(v)}"> ${escapeHtml(v)}</label>`).join('');
     return `
       <div class="form-grid">
-        <div><label>Tipo</label><select class="f-type">${typeOptions}</select></div>
-        <div><label>Proveedor / marca</label><input type="text" class="f-provider" value="${escapeHtml(q.provider)}" placeholder="Ej. Disney Cruise Line"></div>
+        <div><label>Tipo</label><select class="f-tipo">${tipoOptions}</select></div>
+        <div><label>Proveedor</label><select class="f-proveedor"></select></div>
+        <div class="f-clase-wrap"><label>Clase</label><select class="f-clase"></select></div>
+        <div class="f-especifico-wrap"><label>Específico</label><select class="f-especifico"></select></div>
         <div><label>Estado</label><select class="f-status">
           ${['cotizado','apartado','reservado','descartado'].map(s=>`<option value="${s}" ${s===q.status?'selected':''}>${statusLabel(s)}</option>`).join('')}
         </select></div>
+        <div><label>Precio total ($)</label><input type="text" inputmode="numeric" class="f-price" value="${q.price?formatMoneyLive(String(q.price)):''}" placeholder="0"></div>
         <div class="full"><label>Nombre / descripción corta</label><input type="text" class="f-name" value="${escapeHtml(q.name)}" placeholder="Ej. Disney Dream — 4 noches Bahamas, camarote Balcony"></div>
         <div><label>Fecha inicio</label><input type="date" class="f-start" value="${q.start||''}"></div>
         <div><label>Fecha fin</label><input type="date" class="f-end" value="${q.end||''}"></div>
-        <div><label>Precio total ($)</label><input type="number" step="0.01" class="f-price" value="${q.price||''}" placeholder="0.00"></div>
+        <div class="full f-visita-wrap" style="display:none;">
+          <label>Visita(s) del crucero</label>
+          <div class="visitas-box">${visitasHTML}</div>
+        </div>
         <div class="full">
           <label>Detalles (etiqueta : valor — libres según el tipo)</label>
           <div class="detalles-box f-detalles">
@@ -443,15 +552,78 @@
       </div>
     `;
   }
+  // Actualiza Proveedor/Clase/Específico/Visita según el Tipo elegido. `initialSel` (opcional) fuerza
+  // los valores iniciales al abrir un formulario de edición; si es null, se preservan las selecciones actuales.
+  function updateCascade(container, initialSel){
+    const tipoSel = container.querySelector('.f-tipo');
+    const provSel = container.querySelector('.f-proveedor');
+    const claseSel = container.querySelector('.f-clase');
+    const claseWrap = container.querySelector('.f-clase-wrap');
+    const espSel = container.querySelector('.f-especifico');
+    const espWrap = container.querySelector('.f-especifico-wrap');
+    const visitaWrap = container.querySelector('.f-visita-wrap');
+
+    const tipo = tipoSel.value;
+    visitaWrap.style.display = (tipo==='Crucero') ? '' : 'none';
+
+    const provs = proveedoresOf(tipo);
+    const wantProv = initialSel ? initialSel.proveedor : provSel.value;
+    const curProv = (wantProv && provs.includes(wantProv)) ? wantProv : (provs[0]||'');
+    provSel.innerHTML = provs.length
+      ? provs.map(p=>`<option value="${escapeHtml(p)}" ${p===curProv?'selected':''}>${escapeHtml(p)}</option>`).join('')
+      : `<option value="">(sin proveedores)</option>`;
+
+    const clases = clasesOf(tipo, curProv);
+    if(clases.length){
+      claseWrap.style.display='';
+      const wantClase = initialSel ? initialSel.clase : claseSel.value;
+      const curClase = (wantClase && clases.includes(wantClase)) ? wantClase : clases[0];
+      claseSel.innerHTML = clases.map(c=>`<option value="${escapeHtml(c)}" ${c===curClase?'selected':''}>${escapeHtml(c)}</option>`).join('');
+
+      const especificos = especificosOf(tipo, curProv, curClase);
+      if(especificos.length){
+        espWrap.style.display='';
+        const wantEsp = initialSel ? initialSel.especifico : espSel.value;
+        const curEsp = (wantEsp && especificos.includes(wantEsp)) ? wantEsp : especificos[0];
+        espSel.innerHTML = especificos.map(e=>`<option value="${escapeHtml(e)}" ${e===curEsp?'selected':''}>${escapeHtml(e)}</option>`).join('');
+      } else {
+        espWrap.style.display='none'; espSel.innerHTML='';
+      }
+    } else {
+      claseWrap.style.display='none'; claseSel.innerHTML='';
+      espWrap.style.display='none'; espSel.innerHTML='';
+    }
+  }
+  function wireCascadeForm(container, q){
+    if(!container) return;
+    updateCascade(container, q ? {proveedor:q.proveedor, clase:q.clase, especifico:q.especifico} : null);
+    if(q && q.visitas && q.visitas.length){
+      q.visitas.forEach(v=>{
+        container.querySelectorAll('.f-visita').forEach(cb=>{ if(cb.value===v) cb.checked = true; });
+      });
+    }
+    container.querySelector('.f-tipo').addEventListener('change', ()=> updateCascade(container, null));
+    container.querySelector('.f-proveedor').addEventListener('change', ()=> updateCascade(container, null));
+    container.querySelector('.f-clase').addEventListener('change', ()=> updateCascade(container, null));
+  }
   function readQuoteFormValues(container){
+    const claseWrap = container.querySelector('.f-clase-wrap');
+    const espWrap = container.querySelector('.f-especifico-wrap');
+    const visitaWrap = container.querySelector('.f-visita-wrap');
+    const clase = (claseWrap && claseWrap.style.display!=='none') ? container.querySelector('.f-clase').value : '';
+    const especifico = (espWrap && espWrap.style.display!=='none') ? container.querySelector('.f-especifico').value : '';
+    const visitas = (visitaWrap && visitaWrap.style.display!=='none')
+      ? Array.from(container.querySelectorAll('.f-visita:checked')).map(cb=>cb.value)
+      : [];
     return {
-      typeId: container.querySelector('.f-type').value,
-      provider: container.querySelector('.f-provider').value.trim(),
+      tipo: container.querySelector('.f-tipo').value,
+      proveedor: container.querySelector('.f-proveedor').value,
+      clase, especifico, visitas,
       name: container.querySelector('.f-name').value.trim(),
       status: container.querySelector('.f-status').value,
       start: container.querySelector('.f-start').value,
       end: container.querySelector('.f-end').value,
-      price: parseFloat(container.querySelector('.f-price').value)||0,
+      price: parseMoneyInput(container.querySelector('.f-price').value),
       details: Array.from(container.querySelectorAll('.f-detalles .detalle-row')).map(r=>({
         label:r.querySelector('.f-label').value.trim(),
         value:r.querySelector('.f-value').value.trim()
@@ -461,16 +633,23 @@
 
   // ---------------- QUOTE CARD ----------------
   function quoteCardInner(q){
-    const t = getType(q.typeId);
+    const chain = [q.proveedor, q.clase, q.especifico].filter(Boolean);
+    const mainLabel = chain.length ? chain[chain.length-1] : '';
+    const breadcrumb = chain.slice(0,-1).join(' · ');
+    const hasList = (q.visitas && q.visitas.length) || (q.details && q.details.length);
     return `
       <div class="qc-top">
-        <span class="qc-type">${t.icon} ${escapeHtml(t.name)}</span>
+        <span class="qc-type">${tipoIcon(q.tipo)} ${escapeHtml(q.tipo||'Otros')}</span>
         <span class="qc-estado ${q.status}">${statusLabel(q.status)}</span>
       </div>
       <div class="qc-title">${escapeHtml(q.name||'(sin nombre)')}</div>
-      ${q.provider ? `<div class="qc-provider">${escapeHtml(q.provider)}</div>` : ''}
+      ${mainLabel ? `<div class="qc-provider">${escapeHtml(mainLabel)}</div>` : ''}
+      ${breadcrumb ? `<div class="qc-breadcrumb">${escapeHtml(breadcrumb)}</div>` : ''}
       <div class="qc-dates">📅 ${fmtDateRange(q.start,q.end)}</div>
-      ${q.details && q.details.length ? `<ul class="qc-detalles">${q.details.map(d=>`<li><span>${escapeHtml(d.label)}</span><span>${escapeHtml(d.value)}</span></li>`).join('')}</ul>` : ''}
+      ${hasList ? `<ul class="qc-detalles">
+        ${(q.visitas||[]).map(v=>`<li><span>Visita</span><span>${escapeHtml(v)}</span></li>`).join('')}
+        ${(q.details||[]).map(d=>`<li><span>${escapeHtml(d.label)}</span><span>${escapeHtml(d.value)}</span></li>`).join('')}
+      </ul>` : ''}
       <div class="qc-price-row"><div class="qc-price">${fmtDisplay(q.price)}</div></div>
     `;
   }
@@ -515,9 +694,9 @@
   function renderTypeChipsHTML(){
     let html = `<div class="type-chips">`;
     html += `<button class="chip ${catalogFilterType==='all'?'active':''}" data-action="setQuoteFilter" data-val="all">Todos (${state.quotes.length})</button>`;
-    state.types.forEach(t=>{
-      const c = state.quotes.filter(q=>q.typeId===t.id).length;
-      html += `<button class="chip ${catalogFilterType===t.id?'active':''}" data-action="setQuoteFilter" data-val="${t.id}">${t.icon} ${escapeHtml(t.name)} (${c})</button>`;
+    catalogTipos().forEach(t=>{
+      const c = state.quotes.filter(q=>q.tipo===t).length;
+      html += `<button class="chip ${catalogFilterType===t?'active':''}" data-action="setQuoteFilter" data-val="${escapeHtml(t)}">${tipoIcon(t)} ${escapeHtml(t)} (${c})</button>`;
     });
     html += `</div>`;
     return html;
@@ -528,14 +707,16 @@
     const bar = document.getElementById('sectionTabsBar');
     const qActive = state.section==='quotes' ? ' active' : '';
     const tActive = (state.section==='trip'||state.section==='compare') ? ' active' : '';
+    const dActive = state.section==='database' ? ' active' : '';
     bar.innerHTML = `
       <button class="tab-btn main-tab${qActive}" data-action="setSection" data-val="quotes">📋 Cotizaciones</button>
       <button class="tab-btn main-tab${tActive}" data-action="setSection" data-val="trips">🧳 Viajes</button>
+      <button class="tab-btn main-tab${dActive}" data-action="setSection" data-val="database">🗄️ Base de Datos</button>
     `;
   }
   function renderTripTabsBar(){
     const bar = document.getElementById('tripTabsBar');
-    if(state.section==='quotes'){ bar.innerHTML=''; bar.style.display='none'; return; }
+    if(state.section==='quotes' || state.section==='database'){ bar.innerHTML=''; bar.style.display='none'; return; }
     bar.style.display='flex';
     let html = '';
     state.trips.forEach(t=>{
@@ -576,6 +757,11 @@
     `;
     const sortSel = document.getElementById('sortSelect');
     if(sortSel) sortSel.addEventListener('change', (e)=>{ sortMode = e.target.value; renderQuotesSection(); });
+    wireCascadeForm(document.getElementById('addQuoteForm'), null);
+    if(editingQuoteId){
+      const editFormEl = document.querySelector('.edit-quote-form');
+      if(editFormEl) wireCascadeForm(editFormEl, getQuote(editingQuoteId));
+    }
   }
 
   // ---------------- RENDER: TRIP EDITOR ----------------
@@ -659,7 +845,7 @@
       const dateStr = (t.start||t.end) ? `${t.start||'—'} → ${t.end||'—'}` : 'Fechas sin definir';
       const items = getSelectedQuotes(t);
       const list = items.length ? items.map(q=>`
-        <li><span class="cname">${getType(q.typeId).icon} ${escapeHtml(q.name)}</span><span class="camount">${fmtDisplay(q.price)}</span></li>
+        <li><span class="cname">${tipoIcon(q.tipo)} ${escapeHtml(q.name)}</span><span class="camount">${fmtDisplay(q.price)}</span></li>
       `).join('') : `<li style="justify-content:center; color:var(--muted);">Sin cotizaciones incluidas</li>`;
 
       return `
@@ -676,6 +862,73 @@
     panel.innerHTML = `<div class="compare-grid">${cards}</div>`;
   }
 
+  // ---------------- RENDER: BASE DE DATOS ----------------
+  function renderCatalogTree(map, path){
+    const keys = Object.keys(map||{});
+    if(!keys.length) return `<div class="db-empty-hint">Sin elementos.</div>`;
+    return `<ul class="db-tree">${keys.map(name=>{
+      const child = map[name];
+      const childPath = path.concat([name]);
+      const pathEnc = encodeURIComponent(JSON.stringify(childPath));
+      const isBranch = child && typeof child==='object';
+      return `<li>
+        <div class="db-node-row">
+          <span class="db-node-name">${escapeHtml(name)}</span>
+          <button class="link-btn" data-action="dbAddChild" data-path="${pathEnc}">+ hijo</button>
+          <button class="link-btn" data-action="dbRenameNode" data-path="${pathEnc}">✏️ Renombrar</button>
+          <button class="icon-btn danger" data-action="dbDeleteNode" data-path="${pathEnc}" title="Eliminar">🗑</button>
+        </div>
+        ${isBranch ? renderCatalogTree(child, childPath) : ''}
+      </li>`;
+    }).join('')}</ul>`;
+  }
+  function renderDatabaseSection(){
+    const panel = document.getElementById('mainPanel');
+    const tiposHTML = catalogTipos().map(t=>{
+      const expanded = dbExpandedTipo===t;
+      const provMap = (state.catalog[t] && state.catalog[t].children) || {};
+      return `
+        <div class="db-tipo-card">
+          <div class="db-tipo-row">
+            <button class="db-expand-btn" data-action="dbToggleTipo" data-tipo="${escapeHtml(t)}">${expanded?'▾':'▸'}</button>
+            <span class="db-tipo-icon">${tipoIcon(t)}</span>
+            <span class="db-tipo-name">${escapeHtml(t)}</span>
+            <span class="db-node-actions">
+              <button class="link-btn" data-action="dbRenameTipo" data-tipo="${escapeHtml(t)}">✏️ Renombrar</button>
+              <button class="link-btn" data-action="dbEditTipoIcon" data-tipo="${escapeHtml(t)}">🖼 Ícono</button>
+              <button class="icon-btn danger" data-action="dbDeleteTipo" data-tipo="${escapeHtml(t)}" title="Eliminar tipo">🗑</button>
+            </span>
+          </div>
+          ${expanded ? `<div class="db-tree-wrap">
+            <button class="add-detalle" data-action="dbAddChild" data-path="${encodeURIComponent(JSON.stringify([t]))}">+ Agregar proveedor</button>
+            ${renderCatalogTree(provMap, [t])}
+          </div>` : ''}
+        </div>
+      `;
+    }).join('');
+
+    const visitasHTML = state.visitasCrucero.map((v,i)=>`
+      <div class="db-visita-row">
+        <span>${escapeHtml(v)}</span>
+        <span>
+          <button class="link-btn" data-action="dbRenameVisita" data-idx="${i}">✏️</button>
+          <button class="icon-btn danger" data-action="dbDeleteVisita" data-idx="${i}" title="Eliminar">🗑</button>
+        </span>
+      </div>
+    `).join('');
+
+    panel.innerHTML = `
+      <h2 style="font-family:var(--font-display); font-size:1.05rem; color:var(--teal-dark); margin:0 0 4px;">Base de Datos</h2>
+      <p style="font-size:0.8rem; color:var(--muted); margin:0 0 16px;">Administrá el catálogo Tipo → Proveedor → Clase → Específico que alimenta el formulario de cotizaciones.</p>
+      <div class="db-tipos-list">${tiposHTML}</div>
+      <button class="btn-secondary" data-action="dbAddTipo" style="margin-top:10px;">+ Agregar tipo</button>
+
+      <h3 class="col-title" style="margin:26px 0 10px;">Visitas de Crucero</h3>
+      <div class="db-visitas-list">${visitasHTML}</div>
+      <button class="btn-secondary" data-action="dbAddVisita" style="margin-top:10px;">+ Agregar visita</button>
+    `;
+  }
+
   // ---------------- MASTER RENDER ----------------
   function render(){
     save();
@@ -685,48 +938,110 @@
     renderTripTabsBar();
     if(state.section==='quotes') renderQuotesSection();
     else if(state.section==='compare') renderCompareSection();
+    else if(state.section==='database') renderDatabaseSection();
     else renderTripSection();
   }
 
-  // ---------------- TYPES MODAL ----------------
-  function renderTypesModal(){
-    const container = document.getElementById('typesListContainer');
-    container.innerHTML = state.types.map(t=>{
-      const count = state.quotes.filter(q=>q.typeId===t.id).length;
-      return `
-        <div class="cat-row">
-          <input class="cat-icon-input" data-action="editTypeIcon" data-id="${t.id}" value="${escapeHtml(t.icon||'')}" maxlength="4">
-          <input class="cat-name-input2" data-action="editTypeName" data-id="${t.id}" value="${escapeHtml(t.name)}">
-          <span class="cat-count">${count} cotiz.</span>
-          <button class="icon-btn danger" data-action="deleteType" data-id="${t.id}" title="Eliminar tipo">🗑</button>
-        </div>
-      `;
-    }).join('');
-  }
-  function openTypesModal(){ renderTypesModal(); document.getElementById('typesModal').style.display='flex'; }
-  function closeTypesModal(){ document.getElementById('typesModal').style.display='none'; }
-  function addTypeFromModal(){
-    const iconInput = document.getElementById('newTypeIcon');
-    const nameInput = document.getElementById('newTypeName');
-    const name = nameInput.value.trim();
-    if(!name){ nameInput.focus(); return; }
-    const icon = iconInput.value.trim() || '🏷️';
-    state.types.push({id:uid(), name, icon});
-    iconInput.value=''; nameInput.value='';
-    renderTypesModal();
+  // ---------------- ACTIONS: BASE DE DATOS ----------------
+  function dbToggleTipo(t){ dbExpandedTipo = (dbExpandedTipo===t) ? null : t; renderDatabaseSection(); }
+  function dbAddTipo(){
+    const name = prompt('Nombre del nuevo tipo:');
+    if(!name || !name.trim()) return;
+    const n = name.trim();
+    if(state.catalog[n]){ alert('Ya existe un tipo con ese nombre.'); return; }
+    const icon = prompt('Ícono (emoji) para este tipo:', '🏷️') || '🏷️';
+    state.catalog[n] = {icon, children:{}};
     render();
   }
-  function deleteType(id){
-    if(state.types.length<=1){ alert('Debe existir al menos un tipo.'); return; }
-    const itemsInType = state.quotes.filter(q=>q.typeId===id);
-    if(itemsInType.length>0){
-      if(!confirm(`Este tipo tiene ${itemsInType.length} cotización(es). Si lo eliminas, esas cotizaciones se moverán a otro tipo. ¿Continuar?`)) return;
-      const target = state.types.find(t=>t.id==='tipo-otro' && t.id!==id) || state.types.find(t=>t.id!==id);
-      itemsInType.forEach(q => q.typeId = target.id);
-    }
-    state.types = state.types.filter(t=>t.id!==id);
-    if(catalogFilterType===id) catalogFilterType='all';
-    renderTypesModal();
+  function dbRenameTipo(oldName){
+    const name = prompt('Nuevo nombre del tipo:', oldName);
+    if(!name || !name.trim() || name.trim()===oldName) return;
+    const n = name.trim();
+    if(state.catalog[n]){ alert('Ya existe un tipo con ese nombre.'); return; }
+    state.catalog[n] = state.catalog[oldName];
+    delete state.catalog[oldName];
+    state.quotes.forEach(q=>{ if(q.tipo===oldName) q.tipo = n; });
+    if(catalogFilterType===oldName) catalogFilterType = n;
+    if(dbExpandedTipo===oldName) dbExpandedTipo = n;
+    render();
+  }
+  function dbEditTipoIcon(t){
+    const icon = prompt('Nuevo ícono (emoji):', tipoIcon(t));
+    if(icon===null) return;
+    state.catalog[t].icon = icon.trim() || '📦';
+    render();
+  }
+  function dbDeleteTipo(t){
+    if(catalogTipos().length<=1){ alert('Debe existir al menos un tipo.'); return; }
+    const count = state.quotes.filter(q=>q.tipo===t).length;
+    const msg = count>0
+      ? `Este tipo tiene ${count} cotización(es). Se conservarán pero quedarán con un tipo que ya no existe en el catálogo. ¿Continuar?`
+      : `¿Eliminar el tipo "${t}"?`;
+    if(!confirm(msg)) return;
+    delete state.catalog[t];
+    if(catalogFilterType===t) catalogFilterType='all';
+    if(dbExpandedTipo===t) dbExpandedTipo=null;
+    render();
+  }
+  function dbAddChild(pathEnc){
+    const path = JSON.parse(decodeURIComponent(pathEnc));
+    const name = prompt('Nombre del nuevo elemento:');
+    if(!name || !name.trim()) return;
+    const n = name.trim();
+    const map = getOrCreateChildrenMap(path);
+    if(!map) return;
+    if(Object.prototype.hasOwnProperty.call(map, n)){ alert('Ya existe un elemento con ese nombre en este nivel.'); return; }
+    map[n] = null;
+    render();
+  }
+  function dbRenameNode(pathEnc){
+    const path = JSON.parse(decodeURIComponent(pathEnc));
+    const parentMap = getParentMap(path);
+    if(!parentMap) return;
+    const oldName = path[path.length-1];
+    const name = prompt('Nuevo nombre:', oldName);
+    if(!name || !name.trim() || name.trim()===oldName) return;
+    const n = name.trim();
+    if(Object.prototype.hasOwnProperty.call(parentMap, n)){ alert('Ya existe un elemento con ese nombre en este nivel.'); return; }
+    parentMap[n] = parentMap[oldName];
+    delete parentMap[oldName];
+    const depth = path.length; // 2=proveedor, 3=clase, 4=específico
+    state.quotes.forEach(q=>{
+      if(q.tipo!==path[0]) return;
+      if(depth===2 && q.proveedor===oldName) q.proveedor=n;
+      else if(depth===3 && q.proveedor===path[1] && q.clase===oldName) q.clase=n;
+      else if(depth===4 && q.proveedor===path[1] && q.clase===path[2] && q.especifico===oldName) q.especifico=n;
+    });
+    render();
+  }
+  function dbDeleteNode(pathEnc){
+    const path = JSON.parse(decodeURIComponent(pathEnc));
+    const parentMap = getParentMap(path);
+    if(!parentMap) return;
+    const name = path[path.length-1];
+    if(!confirm(`¿Eliminar "${name}" del catálogo? Las cotizaciones existentes conservarán el valor guardado pero ya no aparecerá en la lista.`)) return;
+    delete parentMap[name];
+    render();
+  }
+  function dbAddVisita(){
+    const v = prompt('Nueva visita (puerto):');
+    if(!v || !v.trim()) return;
+    if(state.visitasCrucero.includes(v.trim())){ alert('Ya existe.'); return; }
+    state.visitasCrucero.push(v.trim());
+    render();
+  }
+  function dbRenameVisita(idx){
+    const old = state.visitasCrucero[idx];
+    const v = prompt('Nuevo nombre:', old);
+    if(!v || !v.trim() || v.trim()===old) return;
+    state.visitasCrucero[idx] = v.trim();
+    state.quotes.forEach(q=>{ if(q.visitas){ q.visitas = q.visitas.map(x=> x===old ? v.trim() : x); } });
+    render();
+  }
+  function dbDeleteVisita(idx){
+    const old = state.visitasCrucero[idx];
+    if(!confirm(`¿Eliminar "${old}" de la lista de visitas?`)) return;
+    state.visitasCrucero.splice(idx,1);
     render();
   }
 
@@ -852,6 +1167,7 @@
     switch(action){
       case 'setSection':
         if(el.dataset.val==='quotes'){ state.section='quotes'; }
+        else if(el.dataset.val==='database'){ state.section='database'; }
         else { state.section = (state.section==='compare') ? 'compare' : 'trip'; }
         render();
         break;
@@ -880,25 +1196,45 @@
       case 'cancelEditQuote': cancelEditQuote(); break;
       case 'saveQuoteEdit': saveQuoteEdit(id); break;
       case 'deleteQuote': deleteQuote(id); break;
-      case 'deleteType': deleteType(id); break;
+      case 'dbToggleTipo': dbToggleTipo(el.dataset.tipo); break;
+      case 'dbAddTipo': dbAddTipo(); break;
+      case 'dbRenameTipo': dbRenameTipo(el.dataset.tipo); break;
+      case 'dbEditTipoIcon': dbEditTipoIcon(el.dataset.tipo); break;
+      case 'dbDeleteTipo': dbDeleteTipo(el.dataset.tipo); break;
+      case 'dbAddChild': dbAddChild(el.dataset.path); break;
+      case 'dbRenameNode': dbRenameNode(el.dataset.path); break;
+      case 'dbDeleteNode': dbDeleteNode(el.dataset.path); break;
+      case 'dbAddVisita': dbAddVisita(); break;
+      case 'dbRenameVisita': dbRenameVisita(parseInt(el.dataset.idx,10)); break;
+      case 'dbDeleteVisita': dbDeleteVisita(parseInt(el.dataset.idx,10)); break;
     }
   });
 
   // ---------------- EVENT DELEGATION: INPUT ----------------
   document.addEventListener('input', (e)=>{
+    if(e.target.classList && e.target.classList.contains('f-price')){
+      const el = e.target;
+      const digitsBeforeCursor = el.value.slice(0, el.selectionStart).replace(/[^\d]/g,'').length;
+      el.value = formatMoneyLive(el.value);
+      // Reposiciona el cursor contando dígitos desde el inicio (no separadores).
+      let pos = 0, seen = 0;
+      while(pos < el.value.length && seen < digitsBeforeCursor){
+        if(/\d/.test(el.value[pos])) seen++;
+        pos++;
+      }
+      el.setSelectionRange(pos, pos);
+      return;
+    }
     const el = e.target.closest('[data-action]');
     if(!el) return;
     const action = el.dataset.action;
     const tripId = el.dataset.id;
-    const dataId = el.dataset.id;
 
     switch(action){
       case 'editTripName': { const t=getTrip(tripId); if(t){ t.name=el.value; renderTripTabsBar(); save(); } break; }
       case 'editTripStart': { const t=getTrip(tripId); if(t){ t.start=el.value; save(); } break; }
       case 'editTripEnd': { const t=getTrip(tripId); if(t){ t.end=el.value; save(); } break; }
       case 'fxRate': { state.exchangeRate=parseFloat(el.value)||0; save(); if(state.section==='trip') renderTripSection(); else if(state.section==='compare') renderCompareSection(); break; }
-      case 'editTypeIcon': { const t=state.types.find(t=>t.id===dataId); if(t){ t.icon=el.value; render(); } break; }
-      case 'editTypeName': { const t=state.types.find(t=>t.id===dataId); if(t){ t.name=el.value; render(); } break; }
     }
   });
 
@@ -910,12 +1246,6 @@
     e.target.value = '';
   });
   document.getElementById('btn-reset').addEventListener('click', resetAll);
-  document.getElementById('typesBtn').addEventListener('click', openTypesModal);
-  document.getElementById('closeTypesModal').addEventListener('click', closeTypesModal);
-  document.getElementById('typesModal').addEventListener('click', (e)=>{
-    if(e.target.id==='typesModal') closeTypesModal();
-  });
-  document.getElementById('addTypeBtn').addEventListener('click', addTypeFromModal);
 
   // ---------------- INIT ----------------
   load();
