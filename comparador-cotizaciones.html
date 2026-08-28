@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es-CR">
 <head>
-<meta name="kla-published" content="2026-08-27T17:54:37-06:00">
+<meta name="kla-published" content="2026-08-27T18:16:59-06:00">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KA · Comparador de Cotizaciones</title>
@@ -41,7 +41,7 @@
   ::selection{background:var(--peach); color:var(--teal-dark);}
 
   header.ka-hero{background:linear-gradient(120deg, var(--ka-primary) 0%, #134F49 100%); color:#fff; padding:28px 32px 22px; position:relative; overflow:hidden;}
-  header.ka-hero::after{content:""; position:absolute; right:-40px; top:-60px; width:220px; height:220px; border-radius:50%; background:var(--ka-secondary); opacity:.18;}
+  header.ka-hero::after{content:""; position:absolute; right:-40px; top:-60px; width:220px; height:220px; border-radius:50%; background:var(--ka-secondary); opacity:.18; pointer-events:none;}
   header.ka-hero .ka-mark{display:inline-flex; align-items:center; gap:10px; font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--ka-secondary); font-weight:bold;}
   header.ka-hero .ka-mark span.dot{width:8px;height:8px;border-radius:50%; background:var(--ka-accent); display:inline-block;}
   header.ka-hero .ka-topbar{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px;}
@@ -159,7 +159,18 @@
   .qc-detalles li span:last-child{text-align:right;}
   .qc-price-row{display:flex; justify-content:space-between; align-items:center; background:var(--bg); border-radius:9px; padding:6px 10px;}
   .qc-price{font-family:var(--font-display); font-weight:700; color:var(--teal-dark); font-size:1.05rem;}
-  .qc-actions{display:flex; justify-content:space-between; align-items:center; margin-top:6px;}
+  .qc-actions{display:flex; justify-content:space-between; align-items:center; margin-top:6px; gap:8px; flex-wrap:wrap;}
+  .trip-assign-wrap{position:relative; display:inline-block;}
+  .trip-menu{position:absolute; bottom:calc(100% + 6px); left:0; background:var(--surface); border:1px solid var(--line); border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.14); z-index:30; min-width:180px; overflow:hidden;}
+  .trip-menu-item{display:flex; align-items:center; gap:6px; width:100%; text-align:left; padding:8px 12px; border:none; background:none; cursor:pointer; font-size:0.78rem; color:var(--ink); border-bottom:1px solid var(--line);}
+  .trip-menu-item:last-child{border-bottom:none;}
+  .trip-menu-item:hover{background:var(--teal-soft);}
+  .trip-menu-item.added{color:var(--teal-dark); font-weight:bold;}
+  .trip-menu-check{width:14px; display:inline-block;}
+  .trip-menu-empty{padding:10px 12px; font-size:0.75rem; color:var(--muted); width:180px;}
+  .filters-row{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+  .search-input{flex:1; min-width:200px; text-align:left;}
+  .trip-add-more{margin-top:14px;}
 
   .toggle-btn{border:1px solid var(--teal); background:#fff; color:var(--teal-dark); padding:7px 12px; border-radius:20px; font-size:0.74rem; font-weight:700; cursor:pointer; white-space:nowrap; margin-top:6px; width:100%;}
   .toggle-btn.added{background:var(--teal); color:#fff;}
@@ -378,6 +389,9 @@
   let editingQuoteId = null;   // transient, not persisted
   let catalogFilterType = 'all'; // transient, shared between Cotizaciones tab and Viaje catalog
   let sortMode = 'price_asc';    // transient
+  let catalogFilterClase = 'all'; // transient, filtro por barco/clase en Cotizaciones
+  let searchTerm = '';           // transient, filtro por descripción en Cotizaciones
+  let openTripMenuFor = null;    // transient, id de la cotización con el menú "Agregar a viaje" abierto
   let cheapestSet = new Set();   // recomputed each render
   let dbExpandedTipo = null;     // transient, tipo expandido en la pestaña Base de Datos
 
@@ -500,7 +514,17 @@
     return getSelectedQuotes(trip).reduce((s,q)=> s + (Number(q.price)||0), 0);
   }
   function filteredQuotes(){
-    return state.quotes.filter(q => catalogFilterType==='all' || q.tipo===catalogFilterType);
+    const term = searchTerm.trim().toLowerCase();
+    return state.quotes.filter(q =>
+      (catalogFilterType==='all' || q.tipo===catalogFilterType) &&
+      (catalogFilterClase==='all' || q.clase===catalogFilterClase) &&
+      (!term || (q.name||'').toLowerCase().includes(term))
+    );
+  }
+  function catalogClases(){
+    const set = new Set();
+    state.quotes.forEach(q=>{ if((catalogFilterType==='all'||q.tipo===catalogFilterType) && q.clase) set.add(q.clase); });
+    return Array.from(set).sort();
   }
   function sortQuotes(list){
     const arr = list.slice();
@@ -699,9 +723,25 @@
       ${quoteCardInner(q)}
       <div class="qc-actions">
         <button class="link-btn" data-action="editQuote" data-id="${q.id}">✏️ Editar</button>
+        <div class="trip-assign-wrap">
+          <button class="link-btn" data-action="toggleTripMenu" data-id="${q.id}">🧳 Agregar a viaje ▾</button>
+          ${openTripMenuFor===q.id ? renderTripMenu(q.id) : ''}
+        </div>
         <button class="icon-btn danger" data-action="deleteQuote" data-id="${q.id}" title="Eliminar">🗑</button>
       </div>
     </div>`;
+  }
+  function renderTripMenu(quoteId){
+    if(!state.trips.length){
+      return `<div class="trip-menu"><div class="trip-menu-empty">No hay viajes creados todavía.</div></div>`;
+    }
+    const items = state.trips.map(t=>{
+      const added = !!t.selections[quoteId];
+      return `<button type="button" class="trip-menu-item${added?' added':''}" data-action="toggleSelection" data-trip="${t.id}" data-quote="${quoteId}">
+        <span class="trip-menu-check">${added?'✓':''}</span> ${escapeHtml(t.name||'Viaje')}
+      </button>`;
+    }).join('');
+    return `<div class="trip-menu">${items}</div>`;
   }
 
   function renderTypeChipsHTML(){
@@ -748,15 +788,23 @@
   function renderQuotesSection(){
     const panel = document.getElementById('mainPanel');
     const sorted = sortQuotes(filteredQuotes());
+    const clases = catalogClases();
     panel.innerHTML = `
       <h2 style="font-family:var(--font-display); font-size:1.05rem; color:var(--teal-dark); margin:0 0 4px;">Cotizaciones</h2>
-      <p style="font-size:0.8rem; color:var(--muted); margin:0 0 16px;">Registrá cualquier tipo de cotización — después armá viajes con las que te interesen desde la pestaña "Viajes".</p>
+      <p style="font-size:0.8rem; color:var(--muted); margin:0 0 16px;">Registrá cualquier tipo de cotización, y desde aquí mismo agregala a uno o varios viajes con el botón "Agregar a viaje".</p>
       <div class="panel" style="padding:18px; margin-bottom:16px;">
         <h3 class="col-title" style="margin-bottom:10px;">+ Agregar cotización</h3>
         <div id="addQuoteForm">${quoteFormFieldsHTML(null)}</div>
         <div class="submitRow"><button class="btn-primary" data-action="submitNewQuote">+ Guardar cotización</button></div>
       </div>
       ${renderTypeChipsHTML()}
+      <div class="filters-row">
+        <input type="text" id="searchInput" class="sort-select search-input" placeholder="🔎 Buscar por descripción..." value="${escapeHtml(searchTerm)}">
+        ${clases.length ? `<select class="sort-select" id="claseFilterSelect">
+          <option value="all" ${catalogFilterClase==='all'?'selected':''}>Todos los barcos/clases</option>
+          ${clases.map(c=>`<option value="${escapeHtml(c)}" ${catalogFilterClase===c?'selected':''}>${escapeHtml(c)}</option>`).join('')}
+        </select>` : ''}
+      </div>
       <div class="sort-row">
         <h3 class="col-title">Cotizaciones registradas <span class="count">${sorted.length}</span></h3>
         <select class="sort-select" id="sortSelect">
@@ -766,10 +814,20 @@
           <option value="provider" ${sortMode==='provider'?'selected':''}>Proveedor</option>
         </select>
       </div>
-      ${sorted.length ? `<div class="cards-grid">${sorted.map(q=>renderQuoteCard(q,'manage')).join('')}</div>` : `<div class="empty-state">Todavía no hay cotizaciones${catalogFilterType!=='all'?' de este tipo':''}.<br>Agregá la primera arriba.</div>`}
+      ${sorted.length ? `<div class="cards-grid">${sorted.map(q=>renderQuoteCard(q,'manage')).join('')}</div>` : `<div class="empty-state">No hay cotizaciones que coincidan con el filtro.<br>Ajustá los filtros o agregá una arriba.</div>`}
     `;
     const sortSel = document.getElementById('sortSelect');
     if(sortSel) sortSel.addEventListener('change', (e)=>{ sortMode = e.target.value; renderQuotesSection(); });
+    const claseSel = document.getElementById('claseFilterSelect');
+    if(claseSel) claseSel.addEventListener('change', (e)=>{ catalogFilterClase = e.target.value; renderQuotesSection(); });
+    const searchEl = document.getElementById('searchInput');
+    if(searchEl) searchEl.addEventListener('input', (e)=>{
+      searchTerm = e.target.value;
+      const pos = e.target.selectionStart;
+      renderQuotesSection();
+      const again = document.getElementById('searchInput');
+      if(again){ again.focus(); again.setSelectionRange(pos,pos); }
+    });
     wireCascadeForm(document.getElementById('addQuoteForm'), null);
     if(editingQuoteId){
       const editFormEl = document.querySelector('.edit-quote-form');
@@ -812,33 +870,19 @@
 
     const leftHTML = selItems.length
       ? `<div class="card-list">${selItems.map(q=>renderQuoteCard(q,'included',trip)).join('')}</div>`
-      : `<div class="empty-state">Aún no has incluido cotizaciones.<br>Elegilas desde el catálogo de la derecha →</div>`;
-
-    const catalogList = filteredQuotes();
-    const rightHTML = `
-      <h3 class="col-title" style="margin-bottom:10px;">Catálogo de cotizaciones <span class="count">${state.quotes.length}</span></h3>
-      ${renderTypeChipsHTML()}
-      ${catalogList.length
-        ? `<div class="card-list">${catalogList.map(q=>renderQuoteCard(q,'catalog',trip)).join('')}</div>`
-        : `<div class="empty-state">${state.quotes.length===0 ? 'Todavía no hay cotizaciones registradas.' : 'No hay cotizaciones de este tipo.'}<br><button class="link-btn" data-action="goToQuotesTab">Ir a Cotizaciones</button></div>`
-      }
-    `;
+      : `<div class="empty-state">Aún no has incluido cotizaciones.<br>Agregalas desde la pestaña <button class="link-btn" data-action="goToQuotesTab">Cotizaciones</button>, con el botón "Agregar a viaje".</div>`;
 
     panel.innerHTML = header + `
-      <div class="cols">
-        <div>
-          <div class="col-title-row">
-            <h3 class="col-title">Incluidas en este viaje <span class="count">${selCount}</span></h3>
-            <div class="currency-toggle">
-              <button class="ctog-btn ${state.displayCurrency==='USD'?'active':''}" data-action="setDisplayCurrency" data-val="USD">$</button>
-              <button class="ctog-btn ${state.displayCurrency==='CRC'?'active':''}" data-action="setDisplayCurrency" data-val="CRC">₡</button>
-            </div>
-          </div>
-          ${leftHTML}
-          <div class="total-row"><span>Total del viaje</span><span>${fmtDisplay(total)}</span></div>
+      <div class="col-title-row">
+        <h3 class="col-title">Incluidas en este viaje <span class="count">${selCount}</span></h3>
+        <div class="currency-toggle">
+          <button class="ctog-btn ${state.displayCurrency==='USD'?'active':''}" data-action="setDisplayCurrency" data-val="USD">$</button>
+          <button class="ctog-btn ${state.displayCurrency==='CRC'?'active':''}" data-action="setDisplayCurrency" data-val="CRC">₡</button>
         </div>
-        <div>${rightHTML}</div>
       </div>
+      ${leftHTML}
+      <div class="total-row"><span>Total del viaje</span><span>${fmtDisplay(total)}</span></div>
+      <div class="trip-add-more"><button class="btn-secondary" data-action="goToQuotesTab">+ Agregar cotizaciones desde el catálogo</button></div>
     `;
   }
 
@@ -1171,7 +1215,10 @@
   // ---------------- EVENT DELEGATION: CLICK ----------------
   document.addEventListener('click', (e)=>{
     const el = e.target.closest('[data-action]');
-    if(!el) return;
+    if(!el){
+      if(openTripMenuFor && !e.target.closest('.trip-assign-wrap')){ openTripMenuFor = null; render(); }
+      return;
+    }
     const action = el.dataset.action;
     const id = el.dataset.id;
     const tripId = el.dataset.trip;
@@ -1192,8 +1239,9 @@
       case 'duplicateTrip': duplicateTrip(id); break;
       case 'toggleSelection': toggleSelection(tripId, quoteId); break;
       case 'removeSelection': removeSelection(tripId, quoteId); break;
+      case 'toggleTripMenu': openTripMenuFor = (openTripMenuFor===id) ? null : id; render(); break;
       case 'setDisplayCurrency': state.displayCurrency = el.dataset.val; render(); break;
-      case 'setQuoteFilter': catalogFilterType = el.dataset.val; render(); break;
+      case 'setQuoteFilter': catalogFilterType = el.dataset.val; catalogFilterClase='all'; render(); break;
       case 'addDetalleRow': {
         const box = el.closest('.f-detalles');
         if(box) el.insertAdjacentHTML('beforebegin', detalleRowHTML('',''));
