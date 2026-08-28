@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es-CR">
 <head>
-<meta name="kla-published" content="2026-08-27T18:27:34-06:00">
+<meta name="kla-published" content="2026-08-27T18:32:40-06:00">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KA · Cotizaciones</title>
@@ -139,7 +139,8 @@
 
   /* ---------- QUOTE CARDS ---------- */
   .cards-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(270px,1fr)); gap:14px;}
-  .quote-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px 13px; position:relative;}
+  .quote-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:10px 13px; position:relative; cursor:pointer;}
+  .quote-card:hover{border-color:var(--teal);}
   .quote-card.destacada{border-color:var(--teal); box-shadow:0 0 0 1.5px var(--teal);}
   .quote-card.is-added{border-color:var(--teal); background:var(--teal-soft);}
   .quote-card.muted{opacity:.6;}
@@ -713,20 +714,16 @@
       </div>`;
     }
     if(mode==='included'){
-      return `<div class="quote-card${destacada}${muted}" data-id="${q.id}">
+      return `<div class="quote-card${destacada}${muted}" data-id="${q.id}" data-action="toggleMarked">
         ${quoteCardInner(q)}
-        <div class="qc-actions">
-          <button class="link-btn" data-action="toggleMarked" data-id="${q.id}" style="${q.marked?'color:var(--teal-dark);font-weight:800;':''}">📌 ${q.marked?'Marcada':'Marcar'}</button>
-        </div>
         <button class="sel-remove" data-action="removeSelection" data-trip="${trip.id}" data-quote="${q.id}">✕ Quitar del viaje</button>
       </div>`;
     }
-    // manage (read-only display)
-    return `<div class="quote-card${destacada}${muted}" data-id="${q.id}">
+    // manage (read-only display) — clic en la tarjeta = marcar/desmarcar
+    return `<div class="quote-card${destacada}${muted}" data-id="${q.id}" data-action="toggleMarked">
       ${quoteCardInner(q)}
       <div class="qc-actions">
         <button class="link-btn" data-action="editQuote" data-id="${q.id}">✏️ Editar</button>
-        <button class="link-btn" data-action="toggleMarked" data-id="${q.id}" style="${q.marked?'color:var(--teal-dark);font-weight:800;':''}">📌 ${q.marked?'Marcada':'Marcar'}</button>
         <div class="trip-assign-wrap">
           <button class="link-btn" data-action="toggleTripMenu" data-id="${q.id}">🧳 Agregar a viaje ▾</button>
           ${openTripMenuFor===q.id ? renderTripMenu(q.id) : ''}
