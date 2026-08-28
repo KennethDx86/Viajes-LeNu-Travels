@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es-CR">
 <head>
-<meta name="kla-published" content="2026-08-27T18:27:34-06:00">
+<meta name="kla-published" content="2026-08-27T18:38:55-06:00">
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -540,6 +540,11 @@
   }
   .modal-body{padding:14px 20px; overflow-y:auto; flex:1;}
   .modal-hint{font-size:0.76rem; color:var(--muted); margin:0 0 12px;}
+  .import-quote-row{display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; margin-bottom:8px;}
+  .import-quote-row.imported{border-color:var(--teal); background:var(--teal-soft);}
+  .import-quote-row .iq-name{font-weight:600; font-size:0.85rem;}
+  .import-quote-row .iq-meta{font-size:0.72rem; color:var(--muted);}
+  .import-quote-row .iq-amount{font-variant-numeric:tabular-nums; color:var(--teal-dark); font-weight:700; font-size:0.85rem; white-space:nowrap;}
   .cat-row{
     display:flex; align-items:center; gap:8px; margin-bottom:8px;
     background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:7px 9px;
@@ -582,6 +587,7 @@
     <span>= $1</span>
   </div>
   <button class="btn btn-ghost btn-small" id="categoriesBtn">⚙ Categorías</button>
+  <button class="btn btn-ghost btn-small" id="importQuotesBtn">⬇️ Traer desde Cotizaciones</button>
 </div>
 
 <div class="tabs" id="tabsBar"></div>
@@ -620,12 +626,27 @@
   </div>
 </div>
 
+<!-- Import from Cotizaciones modal -->
+<div class="modal-overlay" id="importQuotesModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>Traer desde Cotizaciones</h2>
+      <button class="icon-btn" id="closeImportQuotesModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-hint">Elegí un viaje ya armado en "Cotizaciones" para agregarlo como rubro con su total. Si lo volvés a traer, se actualiza el monto en vez de duplicarlo.</p>
+      <div id="importQuotesListContainer"><div class="empty-state">Cargando…</div></div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
   "use strict";
 
   const STORAGE_KEY = "ka_cotizador_viajes_v1";
+  const COMPARADOR_STORAGE_KEY = "ka_comparador_cotizaciones_v1"; // fila de "Cotizaciones" en la misma tabla
 
   // ══ Sync a Supabase (multi-dispositivo) ══
   // Nunca bloquea ni falla el guardado local: localStorage manda siempre, esto es
@@ -698,6 +719,7 @@
   }
 
   let state = freshState();
+  let _lastImportResult = null; // transient, cache del último pull a Cotizaciones
 
   function load(){
     try{
@@ -996,6 +1018,84 @@
     document.getElementById('categoriesModal').style.display = 'none';
   }
 
+  // ---------------- IMPORTAR DESDE COTIZACIONES ----------------
+  async function fetchComparadorTrips(){
+    if(!sb) return { error: 'Sin conexión con la base de datos.' };
+    try{
+      const { data, error } = await sb.from('personal_calculadoras').select('data').eq('id', COMPARADOR_STORAGE_KEY).maybeSingle();
+      if(error) return { error: error.message || 'No se pudo consultar Cotizaciones.' };
+      if(!data || !data.data) return { trips: [] };
+      const remote = data.data;
+      const quotes = remote.quotes || [];
+      const trips = (remote.trips || []).map(t=>{
+        const selectedIds = Object.keys(t.selections||{}).filter(qid=>t.selections[qid]);
+        const selectedQuotes = selectedIds.map(qid=>quotes.find(q=>q.id===qid)).filter(Boolean);
+        const total = selectedQuotes.reduce((s,q)=> s + (Number(q.price)||0), 0);
+        return { id: t.id, name: t.name || 'Viaje', total, count: selectedQuotes.length };
+      });
+      return { trips };
+    }catch(e){ return { error: 'No se pudo conectar con Cotizaciones.' }; }
+  }
+  function findImportedCatalogItem(comparadorTripId){
+    return state.catalog.find(it => it.sourceTripId === comparadorTripId);
+  }
+  function importTripAsRubro(trip){
+    const existing = findImportedCatalogItem(trip.id);
+    if(existing){
+      existing.amount = trip.total;
+    } else {
+      const cat = state.categories.find(c=>c.id==='cat-otros') || state.categories[state.categories.length-1] || state.categories[0];
+      state.catalog.push({
+        id: uid(),
+        categoryId: cat ? cat.id : '',
+        name: trip.name + ' (Cotizaciones)',
+        amount: trip.total,
+        obs: 'Importado desde Cotizaciones',
+        sourceTripId: trip.id
+      });
+    }
+    render();
+    renderImportQuotesModalList();
+  }
+  function renderImportQuotesModalList(){
+    const container = document.getElementById('importQuotesListContainer');
+    if(!container) return;
+    const result = _lastImportResult;
+    if(!result){ container.innerHTML = `<div class="empty-state">Cargando…</div>`; return; }
+    if(result.error){
+      container.innerHTML = `<div class="empty-state">${escapeHtml(result.error)}</div>`;
+      return;
+    }
+    if(!result.trips.length){
+      container.innerHTML = `<div class="empty-state">Todavía no hay viajes registrados en Cotizaciones.</div>`;
+      return;
+    }
+    container.innerHTML = result.trips.map(t=>{
+      const existing = findImportedCatalogItem(t.id);
+      const label = existing ? '🔄 Actualizar monto' : '+ Agregar como rubro';
+      return `<div class="import-quote-row${existing?' imported':''}">
+        <div>
+          <div class="iq-name">${escapeHtml(t.name)}${existing?' <span style="font-weight:400;color:var(--muted);">(ya importado)</span>':''}</div>
+          <div class="iq-meta">${t.count} cotización${t.count===1?'':'es'} incluida${t.count===1?'':'s'}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="iq-amount">${fmtUSD(t.total)}</div>
+          <button class="btn-secondary" data-import-trip="${t.id}">${label}</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  async function openImportQuotesModal(){
+    document.getElementById('importQuotesModal').style.display = 'flex';
+    _lastImportResult = null;
+    renderImportQuotesModalList();
+    _lastImportResult = await fetchComparadorTrips();
+    renderImportQuotesModalList();
+  }
+  function closeImportQuotesModal(){
+    document.getElementById('importQuotesModal').style.display = 'none';
+  }
+
   function addCategoryFromModal(){
     const iconInput = document.getElementById('newCatIcon');
     const nameInput = document.getElementById('newCatName');
@@ -1221,6 +1321,17 @@
     if(e.target.id==='categoriesModal') closeCategoriesModal();
   });
   document.getElementById('addCategoryBtn').addEventListener('click', addCategoryFromModal);
+  document.getElementById('importQuotesBtn').addEventListener('click', openImportQuotesModal);
+  document.getElementById('closeImportQuotesModal').addEventListener('click', closeImportQuotesModal);
+  document.getElementById('importQuotesModal').addEventListener('click', (e)=>{
+    if(e.target.id==='importQuotesModal') closeImportQuotesModal();
+  });
+  document.getElementById('importQuotesListContainer').addEventListener('click', (e)=>{
+    const btn = e.target.closest('[data-import-trip]');
+    if(!btn || !_lastImportResult || !_lastImportResult.trips) return;
+    const trip = _lastImportResult.trips.find(t=>t.id===btn.dataset.importTrip);
+    if(trip) importTripAsRubro(trip);
+  });
 
   // ---------------- INIT ----------------
   load();
