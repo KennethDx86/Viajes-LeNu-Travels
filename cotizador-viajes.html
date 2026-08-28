@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es-CR">
 <head>
-<meta name="kla-published" content="2026-08-27T18:38:55-06:00">
+<meta name="kla-published" content="2026-08-27T18:45:14-06:00">
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -865,7 +865,7 @@
 
   function renderCatalogGroups(trip){
     if(state.catalog.length===0){
-      return `<div class="empty-state">El catálogo está vacío.<br>Agrega tu primer rubro arriba (en dólares).</div>`;
+      return `<div class="empty-state">El catálogo está vacío.<br>Usá "⬇️ Traer desde Cotizaciones" arriba para agregar tu primer rubro.</div>`;
     }
     let html = '';
     state.categories.forEach(cat=>{
@@ -901,7 +901,7 @@
   function renderRightColumnHTML(trip){
     return `
       <h3 class="col-title" style="margin-bottom:10px;">Catálogo de rubros <span class="count">${state.catalog.length}</span></h3>
-      ${renderAddItemForm()}
+      <p class="modal-hint" style="margin:0 0 12px;">Los rubros se agregan desde "⬇️ Traer desde Cotizaciones" (arriba). Aquí solo se editan montos/observaciones o se quitan.</p>
       ${renderCatalogGroups(trip)}
     `;
   }
@@ -946,7 +946,6 @@
     `;
 
     panel.innerHTML = header + cols;
-    document.getElementById('manageCatLink').addEventListener('click', openCategoriesModal);
   }
 
   // ---------------- RENDER: COMPARE ----------------
