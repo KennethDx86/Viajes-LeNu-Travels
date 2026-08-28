@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es-CR">
 <head>
-<meta name="kla-published" content="2026-08-27T18:32:40-06:00">
+<meta name="kla-published" content="2026-08-27T18:36:43-06:00">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KA · Cotizaciones</title>
@@ -1131,7 +1131,10 @@
   }
   function toggleMarked(id){
     const q = getQuote(id);
-    if(q) q.marked = !q.marked;
+    if(!q) return;
+    const wasMarked = !!q.marked;
+    state.quotes.forEach(qq => { qq.marked = false; }); // solo una cotización marcada a la vez
+    q.marked = !wasMarked;
     render();
   }
   function toggleSelection(tripId, quoteId){
