@@ -194,6 +194,11 @@
   .compare-bar-track{background:var(--bg); border-radius:20px; height:8px; overflow:hidden; margin-top:4px;}
   .compare-bar-fill{background:var(--peach-dark); height:100%; border-radius:20px;}
   .compare-empty{color:var(--muted); font-size:0.78rem; text-align:center; padding:30px;}
+  .compare-card{position:relative;}
+  .compare-card.is-favorite{border:2px solid var(--ka-accent); box-shadow:0 0 0 3px rgba(221,139,93,0.18);}
+  .fav-star-btn{position:absolute; top:12px; right:12px; background:none; border:none; cursor:pointer; font-size:1.15rem; line-height:1; padding:2px; color:var(--line);}
+  .fav-star-btn.active{color:var(--ka-accent);}
+  .fav-badge{display:inline-block; font-size:0.68rem; font-weight:700; color:#fff; background:var(--ka-accent); border-radius:20px; padding:2px 9px; margin-left:8px; vertical-align:middle;}
 
   .qc-breadcrumb{font-size:0.72rem; color:var(--muted); margin:-2px 0 4px;}
   .visitas-box{display:flex; flex-wrap:wrap; gap:6px 14px; border:1px dashed var(--line); border-radius:10px; padding:10px; background:var(--bg);}
@@ -898,11 +903,17 @@
     const withTotals = state.trips.map(t=>({t, total: tripTotalUSD(t)}));
     const maxTotal = Math.max(1, ...withTotals.map(x=>x.total));
 
-    const sortedTrips = withTotals.slice();
-    if(compareSortMode==='price_asc') sortedTrips.sort((a,b)=>a.total-b.total);
-    else if(compareSortMode==='price_desc') sortedTrips.sort((a,b)=>b.total-a.total);
-    else if(compareSortMode==='date_asc') sortedTrips.sort((a,b)=>(a.t.start||'9999-99-99').localeCompare(b.t.start||'9999-99-99'));
-    else if(compareSortMode==='date_desc') sortedTrips.sort((a,b)=>(b.t.start||'0000-00-00').localeCompare(a.t.start||'0000-00-00'));
+    function applySort(arr){
+      const sorted = arr.slice();
+      if(compareSortMode==='price_asc') sorted.sort((a,b)=>a.total-b.total);
+      else if(compareSortMode==='price_desc') sorted.sort((a,b)=>b.total-a.total);
+      else if(compareSortMode==='date_asc') sorted.sort((a,b)=>(a.t.start||'9999-99-99').localeCompare(b.t.start||'9999-99-99'));
+      else if(compareSortMode==='date_desc') sorted.sort((a,b)=>(b.t.start||'0000-00-00').localeCompare(a.t.start||'0000-00-00'));
+      return sorted;
+    }
+    const favs = applySort(withTotals.filter(x=>x.t.favorite));
+    const rest = applySort(withTotals.filter(x=>!x.t.favorite));
+    const sortedTrips = favs.concat(rest);
 
     const cards = sortedTrips.map(({t,total})=>{
       const pct = Math.round((total/maxTotal)*100);
@@ -911,10 +922,12 @@
       const list = items.length ? items.map(q=>`
         <li><span class="cname">${tipoIcon(q.tipo)} ${escapeHtml(q.name)}</span><span class="camount">${fmtDisplay(q.price)}</span></li>
       `).join('') : `<li style="justify-content:center; color:var(--muted);">Sin cotizaciones incluidas</li>`;
+      const isFav = !!t.favorite;
 
       return `
-        <div class="compare-card">
-          <h3>${escapeHtml(t.name)}</h3>
+        <div class="compare-card${isFav?' is-favorite':''}">
+          <button class="fav-star-btn${isFav?' active':''}" data-action="toggleFavoriteTrip" data-id="${t.id}" title="${isFav?'Quitar de favoritos':'Marcar como favorito'}">${isFav?'★':'☆'}</button>
+          <h3>${escapeHtml(t.name)}${isFav?'<span class="fav-badge">Favorito</span>':''}</h3>
           <div class="dates">${dateStr}</div>
           <div class="compare-total"><span>Total</span><span>${fmtDisplay(total)}</span></div>
           <div class="compare-bar-track"><div class="compare-bar-fill" style="width:${pct}%"></div></div>
@@ -1144,9 +1157,16 @@
     const copy = JSON.parse(JSON.stringify(t));
     copy.id = uid();
     copy.name = t.name + ' (copia)';
+    copy.favorite = false;
     state.trips.push(copy);
     state.activeTripId = copy.id;
     state.section='trip';
+    render();
+  }
+  function toggleFavoriteTrip(id){
+    const t = getTrip(id);
+    if(!t) return;
+    t.favorite = !t.favorite;
     render();
   }
   function toggleMarked(id){
@@ -1265,6 +1285,7 @@
       case 'showCompare': state.section='compare'; render(); break;
       case 'removeTrip': removeTrip(id); break;
       case 'duplicateTrip': duplicateTrip(id); break;
+      case 'toggleFavoriteTrip': toggleFavoriteTrip(id); break;
       case 'toggleSelection': toggleSelection(tripId, quoteId); break;
       case 'removeSelection': removeSelection(tripId, quoteId); break;
       case 'toggleTripMenu': openTripMenuFor = (openTripMenuFor===id) ? null : id; render(); break;
