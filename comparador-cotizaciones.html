@@ -390,6 +390,7 @@
   let editingQuoteId = null;   // transient, not persisted
   let catalogFilterType = 'all'; // transient, shared between Cotizaciones tab and Viaje catalog
   let sortMode = 'price_asc';    // transient
+  let compareSortMode = 'default'; // transient, orden en la pestaña Comparar
   let catalogFilterClase = 'all'; // transient, filtro por barco/clase en Cotizaciones
   let searchTerm = '';           // transient, filtro por descripción en Cotizaciones
   let openTripMenuFor = null;    // transient, id de la cotización con el menú "Agregar a viaje" abierto
@@ -894,11 +895,16 @@
       panel.innerHTML = `<div class="compare-empty">No hay viajes para comparar.</div>`;
       return;
     }
-    const totals = state.trips.map(t=>tripTotalUSD(t));
-    const maxTotal = Math.max(1, ...totals);
+    const withTotals = state.trips.map(t=>({t, total: tripTotalUSD(t)}));
+    const maxTotal = Math.max(1, ...withTotals.map(x=>x.total));
 
-    const cards = state.trips.map((t,idx)=>{
-      const total = totals[idx];
+    const sortedTrips = withTotals.slice();
+    if(compareSortMode==='price_asc') sortedTrips.sort((a,b)=>a.total-b.total);
+    else if(compareSortMode==='price_desc') sortedTrips.sort((a,b)=>b.total-a.total);
+    else if(compareSortMode==='date_asc') sortedTrips.sort((a,b)=>(a.t.start||'9999-99-99').localeCompare(b.t.start||'9999-99-99'));
+    else if(compareSortMode==='date_desc') sortedTrips.sort((a,b)=>(b.t.start||'0000-00-00').localeCompare(a.t.start||'0000-00-00'));
+
+    const cards = sortedTrips.map(({t,total})=>{
       const pct = Math.round((total/maxTotal)*100);
       const dateStr = (t.start||t.end) ? `${t.start||'—'} → ${t.end||'—'}` : 'Fechas sin definir';
       const items = getSelectedQuotes(t);
@@ -917,7 +923,21 @@
       `;
     }).join('');
 
-    panel.innerHTML = `<div class="compare-grid">${cards}</div>`;
+    panel.innerHTML = `
+      <div class="sort-row" style="margin-bottom:14px;">
+        <h3 class="col-title">Viajes a comparar <span class="count">${state.trips.length}</span></h3>
+        <select class="sort-select" id="compareSortSelect">
+          <option value="default" ${compareSortMode==='default'?'selected':''}>Orden por defecto</option>
+          <option value="price_asc" ${compareSortMode==='price_asc'?'selected':''}>Precio (menor a mayor)</option>
+          <option value="price_desc" ${compareSortMode==='price_desc'?'selected':''}>Precio (mayor a menor)</option>
+          <option value="date_asc" ${compareSortMode==='date_asc'?'selected':''}>Fecha de inicio (más próxima primero)</option>
+          <option value="date_desc" ${compareSortMode==='date_desc'?'selected':''}>Fecha de inicio (más lejana primero)</option>
+        </select>
+      </div>
+      <div class="compare-grid">${cards}</div>
+    `;
+    const sortSel = document.getElementById('compareSortSelect');
+    if(sortSel) sortSel.addEventListener('change', (e)=>{ compareSortMode = e.target.value; renderCompareSection(); });
   }
 
   // ---------------- RENDER: BASE DE DATOS ----------------
