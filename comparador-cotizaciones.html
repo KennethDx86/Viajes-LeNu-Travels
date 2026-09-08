@@ -199,6 +199,8 @@
   .fav-star-btn{position:absolute; top:12px; right:12px; background:none; border:none; cursor:pointer; font-size:1.15rem; line-height:1; padding:2px; color:var(--line);}
   .fav-star-btn.active{color:var(--ka-accent);}
   .fav-badge{display:inline-block; font-size:0.68rem; font-weight:700; color:#fff; background:var(--ka-accent); border-radius:20px; padding:2px 9px; margin-left:8px; vertical-align:middle;}
+  .compare-card li.fav-item{background:rgba(221,139,93,0.12); border-radius:6px; padding-left:6px; padding-right:6px; border-bottom-color:transparent;}
+  .compare-card li.fav-item .cname{color:var(--ka-accent-hover); font-weight:700;}
 
   .qc-breadcrumb{font-size:0.72rem; color:var(--muted); margin:-2px 0 4px;}
   .visitas-box{display:flex; flex-wrap:wrap; gap:6px 14px; border:1px dashed var(--line); border-radius:10px; padding:10px; background:var(--bg);}
@@ -903,26 +905,20 @@
     const withTotals = state.trips.map(t=>({t, total: tripTotalUSD(t)}));
     const maxTotal = Math.max(1, ...withTotals.map(x=>x.total));
 
-    function applySort(arr){
-      const sorted = arr.slice();
-      if(compareSortMode==='price_asc') sorted.sort((a,b)=>a.total-b.total);
-      else if(compareSortMode==='price_desc') sorted.sort((a,b)=>b.total-a.total);
-      else if(compareSortMode==='date_asc') sorted.sort((a,b)=>(a.t.start||'9999-99-99').localeCompare(b.t.start||'9999-99-99'));
-      else if(compareSortMode==='date_desc') sorted.sort((a,b)=>(b.t.start||'0000-00-00').localeCompare(a.t.start||'0000-00-00'));
-      return sorted;
-    }
-    const favs = applySort(withTotals.filter(x=>x.t.favorite));
-    const rest = applySort(withTotals.filter(x=>!x.t.favorite));
-    const sortedTrips = favs.concat(rest);
+    const sortedTrips = withTotals.slice();
+    if(compareSortMode==='price_asc') sortedTrips.sort((a,b)=>a.total-b.total);
+    else if(compareSortMode==='price_desc') sortedTrips.sort((a,b)=>b.total-a.total);
+    else if(compareSortMode==='date_asc') sortedTrips.sort((a,b)=>(a.t.start||'9999-99-99').localeCompare(b.t.start||'9999-99-99'));
+    else if(compareSortMode==='date_desc') sortedTrips.sort((a,b)=>(b.t.start||'0000-00-00').localeCompare(a.t.start||'0000-00-00'));
 
     const cards = sortedTrips.map(({t,total})=>{
       const pct = Math.round((total/maxTotal)*100);
       const dateStr = (t.start||t.end) ? `${t.start||'—'} → ${t.end||'—'}` : 'Fechas sin definir';
       const items = getSelectedQuotes(t);
-      const list = items.length ? items.map(q=>`
-        <li><span class="cname">${tipoIcon(q.tipo)} ${escapeHtml(q.name)}</span><span class="camount">${fmtDisplay(q.price)}</span></li>
-      `).join('') : `<li style="justify-content:center; color:var(--muted);">Sin cotizaciones incluidas</li>`;
       const isFav = !!t.favorite;
+      const list = items.length ? items.map(q=>`
+        <li class="${isFav?'fav-item':''}"><span class="cname">${tipoIcon(q.tipo)} ${escapeHtml(q.name)}</span><span class="camount">${fmtDisplay(q.price)}</span></li>
+      `).join('') : `<li style="justify-content:center; color:var(--muted);">Sin cotizaciones incluidas</li>`;
 
       return `
         <div class="compare-card${isFav?' is-favorite':''}">
