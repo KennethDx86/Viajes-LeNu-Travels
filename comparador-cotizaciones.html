@@ -151,6 +151,9 @@
   .qc-estado.apartado{background:#FCE8D8; color:var(--peach-dark);}
   .qc-estado.reservado{background:#DDEFE9; color:var(--teal-dark);}
   .qc-estado.descartado{background:#EFEFEF; color:var(--muted);}
+  .qc-top-right{display:flex; align-items:center; gap:6px;}
+  .qc-fav-badge{font-size:0.65rem; font-weight:700; padding:3px 8px; border-radius:20px; background:var(--ka-accent); color:#fff; white-space:nowrap;}
+  .quote-card.is-fav-linked{border-color:var(--ka-accent); box-shadow:0 0 0 1.5px var(--ka-accent);}
   .qc-title{font-family:var(--font-display); font-weight:700; font-size:0.98rem; margin:1px 0; color:var(--ink);}
   .qc-provider{font-family:var(--font-display); font-weight:700; font-size:0.9rem; color:var(--ink); margin-bottom:4px;}
   .qc-dates{font-size:0.74rem; color:var(--muted); margin-bottom:4px;}
@@ -678,15 +681,25 @@
   }
 
   // ---------------- QUOTE CARD ----------------
+  function favoriteTripsForQuote(quoteId){
+    return state.trips.filter(t => t.favorite && t.selections[quoteId]);
+  }
   function quoteCardInner(q){
     const chain = [q.proveedor, q.clase, q.especifico].filter(Boolean);
     const mainLabel = chain.length ? chain[chain.length-1] : '';
     const breadcrumb = chain.slice(0,-1).join(' · ');
     const hasList = (q.visitas && q.visitas.length) || (q.details && q.details.length);
+    const favTrips = favoriteTripsForQuote(q.id);
+    const favBadge = favTrips.length
+      ? `<span class="qc-fav-badge" title="Favorito en: ${favTrips.map(t=>escapeHtml(t.name||'Viaje')).join(', ')}">⭐ Favorito</span>`
+      : '';
     return `
       <div class="qc-top">
         <span class="qc-type">${tipoIcon(q.tipo)} ${escapeHtml(q.tipo||'Otros')}</span>
-        <span class="qc-estado ${q.status}">${statusLabel(q.status)}</span>
+        <div class="qc-top-right">
+          ${favBadge}
+          <span class="qc-estado ${q.status}">${statusLabel(q.status)}</span>
+        </div>
       </div>
       <div class="qc-title">${escapeHtml(q.name||'(sin nombre)')}</div>
       ${mainLabel ? `<div class="qc-provider">${escapeHtml(mainLabel)}</div>` : ''}
@@ -712,9 +725,10 @@
     }
     const destacada = q.marked ? ' destacada' : '';
     const muted = q.status==='descartado' ? ' muted' : '';
+    const favLinked = favoriteTripsForQuote(q.id).length ? ' is-fav-linked' : '';
     if(mode==='catalog'){
       const added = trip && !!trip.selections[q.id];
-      return `<div class="quote-card${destacada}${muted}${added?' is-added':''}" data-id="${q.id}">
+      return `<div class="quote-card${destacada}${muted}${favLinked}${added?' is-added':''}" data-id="${q.id}">
         ${quoteCardInner(q)}
         <button class="toggle-btn ${added?'added':''}" data-action="toggleSelection" data-trip="${trip.id}" data-quote="${q.id}">
           ${added?'✓ Incluida en este viaje':'+ Incluir en este viaje'}
@@ -722,13 +736,13 @@
       </div>`;
     }
     if(mode==='included'){
-      return `<div class="quote-card${destacada}${muted}" data-id="${q.id}" data-action="toggleMarked">
+      return `<div class="quote-card${destacada}${muted}${favLinked}" data-id="${q.id}" data-action="toggleMarked">
         ${quoteCardInner(q)}
         <button class="sel-remove" data-action="removeSelection" data-trip="${trip.id}" data-quote="${q.id}">✕ Quitar del viaje</button>
       </div>`;
     }
     // manage (read-only display) — clic en la tarjeta = marcar/desmarcar
-    return `<div class="quote-card${destacada}${muted}" data-id="${q.id}" data-action="toggleMarked">
+    return `<div class="quote-card${destacada}${muted}${favLinked}" data-id="${q.id}" data-action="toggleMarked">
       ${quoteCardInner(q)}
       <div class="qc-actions">
         <button class="link-btn" data-action="editQuote" data-id="${q.id}">✏️ Editar</button>
