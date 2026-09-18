@@ -1,0 +1,5 @@
+# Metadatos locales de macOS
+.DS_Store
+
+# Credenciales locales. Nunca se versionan.
+.gh-token-vlt
