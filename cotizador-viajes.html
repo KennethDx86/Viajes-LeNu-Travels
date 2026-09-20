@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es-CR">
 <head>
-<meta name="kla-published" content="2026-08-27T18:45:14-06:00">
+<meta name="kla-published" content="2026-09-20T09:35:29-06:00">
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -559,6 +559,21 @@
   .modal-add-cat{
     display:flex; gap:8px; padding:14px 20px; border-top:1px solid var(--line);
   }
+
+  /* Refinamiento visual KLA: superficie de trabajo más legible, sin cambiar flujos. */
+  body{background:linear-gradient(180deg,#EEF4F1 0,#F4F6F5 38%,#F8F5F1 100%);}
+  header.ka-hero{padding:34px max(24px,calc((100vw - 1240px)/2)) 28px;box-shadow:0 8px 24px rgba(19,79,73,.12);}
+  header.ka-hero::before{content:"";position:absolute;width:360px;height:360px;border:1px solid rgba(242,196,164,.23);border-radius:50%;right:112px;top:-230px;pointer-events:none;}
+  header.ka-hero .ka-topbar,header.ka-hero h1,header.ka-hero p{position:relative;z-index:1;}
+  header.ka-hero h1{font-size:clamp(1.7rem,3vw,2.15rem);margin-top:16px;}header.ka-hero p{font-size:.95rem;line-height:1.5;}
+  .fx-bar,.tabs,main{max-width:1240px;margin-left:auto;margin-right:auto;}.fx-bar{padding:18px 32px 0;}.fx-box{border-radius:10px;padding:8px 12px;box-shadow:0 5px 14px rgba(29,27,58,.045);}
+  .tabs{padding-left:32px;padding-right:32px;gap:8px;}.tab-btn{padding:10px 16px;border-radius:11px 11px 0 0;transition:background .16s,border-color .16s,color .16s;}.tab-btn.active{background:#fff;border-color:rgba(27,107,100,.28);box-shadow:0 -3px 0 var(--ka-primary);}.tab-add{border-radius:9px;}
+  main{padding:0 32px 42px;}.panel{padding:26px;background:rgba(255,255,255,.52);border-color:rgba(27,107,100,.16);border-radius:0 16px 16px 16px;box-shadow:0 16px 34px rgba(29,27,58,.055);}
+  .trip-header{padding:22px 24px;border:1px solid rgba(27,107,100,.12);box-shadow:0 8px 22px rgba(29,27,58,.055);}.trip-total-box{background:linear-gradient(135deg,var(--teal),var(--teal-dark));box-shadow:0 7px 16px rgba(19,79,73,.2);}.cols{gap:28px;}.col-title{font-size:1.03rem;}.col-title .count{padding:3px 9px;}
+  .sel-item-ro,.cat-item,.add-item-form,.empty-state{border-color:rgba(27,107,100,.15);box-shadow:0 3px 10px rgba(29,27,58,.025);}.sel-item-ro,.cat-item{border-radius:12px;}.add-item-form{border-radius:14px;padding:17px;}.total-row{box-shadow:0 8px 16px rgba(19,79,73,.13);}
+  .btn-primary{box-shadow:0 5px 12px rgba(27,107,100,.18);}.btn-primary,.btn-secondary,button.btn,.icon-btn,.toggle-btn,.ctog-btn{transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}.btn-primary:hover,.btn-secondary:hover,button.btn:hover,.icon-btn:hover,.toggle-btn:hover{transform:translateY(-1px);}
+  .compare-card{border-color:rgba(27,107,100,.15);box-shadow:0 7px 18px rgba(29,27,58,.05);}.modal-box{border:1px solid rgba(27,107,100,.18);box-shadow:0 24px 60px rgba(29,27,58,.22);}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid rgba(221,139,93,.5);outline-offset:2px;}
+  @media (max-width:640px){header.ka-hero{padding:27px 18px 23px;}.fx-bar,.tabs,main{padding-left:18px;padding-right:18px;}.tabs{gap:5px;}.tab-btn{padding:9px 11px;font-size:.76rem;}.panel{padding:16px;border-radius:0 12px 12px 12px;}.trip-header{padding:18px;}.trip-header-main{min-width:0;}.trip-actions{width:100%;justify-content:space-between;}.trip-total-box{flex:1;text-align:left;}}
 </style>
 <style>
 #kla-publish-badge-wrap{position:fixed;bottom:14px;right:14px;display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--ka-dark);opacity:.55;z-index:50;font-family:inherit;pointer-events:none;text-align:right}
