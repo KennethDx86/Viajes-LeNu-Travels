@@ -14,7 +14,7 @@ body.kla-ui-background{
   color:var(--kla-ui-navy);
   background:
     radial-gradient(circle at 25% 4%,rgba(217,229,221,.68),transparent 37%),
-    radial-gradient(circle at 82% 24%,rgba(242,196,164,.55),transparent 31%),
+    radial-gradient(circle at 82% 24%,rgba(242,196,164,.20),transparent 31%),
     #F8FAF8;
   background-attachment:fixed;
 }
