@@ -1,0 +1,81 @@
+/* Adaptación de la guía de interfaz clara KLA para las herramientas LeNu. */
+:root{
+  --kla-ui-teal:#1B6B64;
+  --kla-ui-peach:#F2C4A4;
+  --kla-ui-terracotta:#DD8B5D;
+  --kla-ui-terracotta-hover:#C6763F;
+  --kla-ui-navy:#1D1B3A;
+  --kla-ui-sage:#D9E5DD;
+  --kla-ui-muted:#6B6980;
+  --kla-ui-field:#F5F7F6;
+  --kla-ui-field-border:#E2E9E5;
+}
+body.kla-ui-background{
+  color:var(--kla-ui-navy);
+  background:
+    radial-gradient(circle at 25% 4%,rgba(217,229,221,.68),transparent 37%),
+    radial-gradient(circle at 82% 24%,rgba(242,196,164,.55),transparent 31%),
+    #F8FAF8;
+  background-attachment:fixed;
+}
+.kla-ui-background header.ka-hero{
+  color:var(--kla-ui-navy);
+  background:rgba(255,255,255,.72);
+  border-bottom:1px solid rgba(217,229,221,.85);
+  box-shadow:0 8px 30px rgba(29,27,58,.035);
+}
+.kla-ui-background header.ka-hero::after{display:none}
+.kla-ui-background header.ka-hero .ka-mark{color:var(--kla-ui-teal)}
+.kla-ui-background header.ka-hero p,
+.kla-ui-background header.ka-hero .ka-back{color:var(--kla-ui-muted)}
+.kla-ui-background header.ka-hero .ka-back:hover{color:var(--kla-ui-teal)}
+.kla-ui-background header.ka-hero .ka-mark img{box-shadow:0 2px 10px rgba(29,27,58,.12)!important}
+.kla-ui-background .tool-card,
+.kla-ui-background .panel{
+  background:rgba(255,255,255,.86);
+  border:1px solid rgba(255,255,255,.9);
+  border-radius:24px;
+  box-shadow:0 16px 45px rgba(29,27,58,.07);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}
+.kla-ui-background .tool-card:hover{border-color:var(--kla-ui-sage);box-shadow:0 20px 48px rgba(29,27,58,.1)}
+.kla-ui-background .panel{min-height:60vh}
+.kla-ui-background .tabs .tab-btn{border:1px solid var(--kla-ui-sage);border-bottom:0}
+.kla-ui-background .tabs .tab-btn.active{background:rgba(255,255,255,.86);color:var(--kla-ui-teal)}
+.kla-ui-background .tabs .compare-tab.active{background:var(--kla-ui-teal);color:#fff}
+.kla-ui-background .fx-box,
+.kla-ui-background .trip-header,
+.kla-ui-background .add-item-form,
+.kla-ui-background .quote-card,
+.kla-ui-background .modal-box{border-color:var(--kla-ui-sage);border-radius:16px}
+.kla-ui-background :where(input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea){
+  color:var(--kla-ui-navy);
+  background:var(--kla-ui-field);
+  border-color:var(--kla-ui-field-border);
+  border-radius:13px;
+}
+.kla-ui-background :where(input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea):focus-visible,
+.kla-ui-background :where(button,a):focus-visible{outline:3px solid rgba(27,107,100,.32);outline-offset:2px}
+.kla-ui-background .btn-primary{
+  color:var(--kla-ui-navy);
+  background:var(--kla-ui-terracotta);
+  border:0;
+  border-radius:999px;
+  padding:10px 19px;
+}
+.kla-ui-background .btn-primary:hover{background:var(--kla-ui-terracotta-hover);color:#fff}
+.kla-ui-background .btn-secondary,
+.kla-ui-background .btn-ghost{border-color:var(--kla-ui-sage);border-radius:999px;color:var(--kla-ui-teal)}
+.kla-ui-background .btn-secondary:hover,
+.kla-ui-background .btn-ghost:hover{background:var(--kla-ui-field)}
+.kla-ui-background footer{color:var(--kla-ui-muted)}
+@media(max-width:600px){
+  .kla-ui-background .tool-card,
+  .kla-ui-background .panel{border-radius:20px}
+}
+@media print{
+  body.kla-ui-background{background:#fff}
+  .kla-ui-background .tool-card,
+  .kla-ui-background .panel{box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+}
